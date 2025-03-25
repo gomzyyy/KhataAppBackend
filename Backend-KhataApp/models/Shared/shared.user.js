@@ -1,6 +1,4 @@
-import { Schema, model } from "mongoose";
-
-export const sharedSchema = new Schema({
+export const sharedUser = {
   name: {
     type: String,
     required: true,
@@ -15,6 +13,4 @@ export const sharedSchema = new Schema({
   address: {
     type: String,
   },
-});
-const Shared = model("Shared", sharedSchema);
-export default Shared;
+};

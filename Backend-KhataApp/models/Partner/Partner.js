@@ -1,10 +1,10 @@
 import { Schema, model } from "mongoose";
-import Shared from "../shared.js";
-import { AdminRole } from "../../constants/enums";
+import {sharedUser} from "../Shared/shared.user.js";
+import { AdminRole } from "../../constants/enums.js";
 
 const partnerSchema = new Schema(
   {
-    ...Shared,
+    ...sharedUser,
     businessOwner: {
       type: Schema.Types.ObjectId,
       ref: "Owner",
@@ -33,5 +33,5 @@ const partnerSchema = new Schema(
   },
   { timestamps: true }
 );
-const Partner = model("Owner", partnerSchema);
+const Partner = model("Partner", partnerSchema);
 export default Partner;

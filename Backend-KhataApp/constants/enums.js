@@ -61,7 +61,7 @@ export const Position = [
   "Public Relations Manager", // Brand and Reputation Management
   "Training Specialist", // Employee Development and Training
   "Maintenance Engineer", // Facility and Equipment Maintenance
-  'Other'
+  "Other",
 ];
 
 export const EmploymentStatus = [
@@ -72,3 +72,14 @@ export const EmploymentStatus = [
   "Other",
 ];
 export const Shift = ["Morning", "Evening", "Night", "Undecided", "Other"];
+
+export const Quantity = [
+  "Ml",
+  "Litre",
+  "Kilogram",
+  "Grams",
+  "Pcs",
+  "Pack",
+  "Dozen",
+  "Other",
+];

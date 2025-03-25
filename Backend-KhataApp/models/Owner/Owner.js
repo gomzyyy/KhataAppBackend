@@ -1,10 +1,10 @@
 import { Schema, model } from "mongoose";
-import Shared from "../shared.js";
-import { AdminRole, BusinessType } from "../../constants/enums";
+import {sharedUser} from "../Shared/shared.user.js";
+import { AdminRole, BusinessType } from "../../constants/enums.js";
 
 const ownerSchema = new Schema(
   {
-    ...Shared,
+    ...sharedUser,
     password: {
       type: String,
       required: true,

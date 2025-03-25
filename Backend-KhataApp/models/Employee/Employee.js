@@ -1,16 +1,16 @@
 import { Schema, model } from "mongoose";
-import Shared from "../shared.js";
+import {sharedUser} from "../Shared/shared.user.js";
 import {
   Department,
   EmploymentStatus,
   Gender,
   Position,
   Shift,
-} from "../../constants/enums";
+} from "../../constants/enums.js";
 
 const employeeSchema = new Schema(
   {
-    ...Shared,
+    ...sharedUser,
     employeeId: {
       type: String,
     },
