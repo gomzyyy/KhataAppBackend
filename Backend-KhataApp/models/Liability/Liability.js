@@ -54,21 +54,17 @@ const liabilitySchema = new Schema(
   { timestamps: true }
 );
 
-// 📚 Pre-save Middleware to Calculate `remainingBalance`
 liabilitySchema.pre("save", function (next) {
   const timeElapsed =
-    (new Date() - this.startDate) / (1000 * 60 * 60 * 24 * 365); // Years since start
+    (new Date() - this.startDate) / (1000 * 60 * 60 * 24 * 365);
   if (this.interestRate) {
-    // Compound interest applied
     this.remainingBalance =
       this.amount * Math.pow(1 + this.interestRate / 100, timeElapsed);
   } else if (this.installmentAmount) {
-    // Installment-based repayment
-    const installmentsPaid = Math.floor(timeElapsed * 12); // Monthly installments
+    const installmentsPaid = Math.floor(timeElapsed * 12);
     this.remainingBalance =
       this.amount - this.installmentAmount * installmentsPaid;
   } else {
-    // No interest or installment, original amount remains
     this.remainingBalance = this.amount;
   }
 
