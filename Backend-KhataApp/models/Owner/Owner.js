@@ -1,6 +1,6 @@
 import { Schema, model } from "mongoose";
-import {sharedUser} from "../Shared/shared.user.js";
-import { AdminRole, BusinessType } from "../../constants/enums.js";
+import { sharedUser } from "../Shared/shared.user.js";
+import { AdminRole, BusinessType, PremiumType } from "../../constants/enums.js";
 
 const ownerSchema = new Schema(
   {
@@ -15,8 +15,13 @@ const ownerSchema = new Schema(
     },
     businessAddress: {
       type: String,
+      required: true,
     },
     businessName: {
+      type: String,
+      required: true,
+    },
+    businessPhoneNumber: {
       type: String,
       required: true,
     },
@@ -26,6 +31,11 @@ const ownerSchema = new Schema(
         ref: "Owner",
       },
     ],
+    premium: {
+      type: String,
+      enum: [...PremiumType],
+      default: "Regular",
+    },
     businessDescription: {
       type: String,
     },

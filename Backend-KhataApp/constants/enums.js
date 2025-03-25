@@ -6,6 +6,7 @@ export const BusinessType = [
   "Distribution",
   "Other",
 ];
+export const PremiumType = ["Regular", "Silver", "Gold"];
 export const AdminRole = ["Owner", "Employee", "Partner"];
 export const Gender = ["Male", "Female", "Rather not to say", "Other"];
 export const Department = [
@@ -29,7 +30,8 @@ export const Department = [
   "Compliance", // Regulatory and Policy Compliance
   "Engineering", // Technical Development
   "Business Development", // Growth and Partnerships
-  "Maintenance", // Facility and Equipment Management
+  "Maintenance", // Facility and Equipment Management,
+  "Other",
 ];
 export const Position = [
   "CEO", // Chief Executive Officer
