@@ -6,6 +6,7 @@ export const BusinessType = [
   "Distribution",
   "Other",
 ];
+export const ReportsToModel = ["Owner","Partner","Employee"]
 export const PremiumType = ["Regular", "Silver", "Gold"];
 export const AdminRole = ["Owner", "Employee", "Partner"];
 export const Gender = ["Male", "Female", "Rather not to say", "Other"];

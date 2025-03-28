@@ -1,10 +1,11 @@
 import { Schema, model } from "mongoose";
-import {sharedUser} from "../Shared/shared.user.js";
+import { sharedUser } from "../Shared/shared.user.js";
 import {
   Department,
   EmploymentStatus,
   Gender,
   Position,
+  ReportsToModel,
   Shift,
 } from "../../constants/enums.js";
 
@@ -57,10 +58,6 @@ const employeeSchema = new Schema(
         type: String,
       },
     ],
-    address: {
-      type: String,
-      required: true,
-    },
     skills: [
       {
         type: String,
@@ -82,7 +79,7 @@ const employeeSchema = new Schema(
     reportsToModel: {
       type: String,
       required: true,
-      enum: ["Owner", "Employee"],
+      enum: [...ReportsToModel],
     },
   },
   { timestamps: true }

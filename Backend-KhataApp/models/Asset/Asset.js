@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-const { Schema, model, models } = mongoose;
+const { Schema, model } = mongoose;
 import { AssetType, AssetStatus } from "../../constants/enums.js";
 
 const assetSchema = new Schema(
@@ -77,7 +77,6 @@ const assetSchema = new Schema(
 assetSchema.pre("save", function (next) {
   const yearsPassed =
     (new Date() - this.acquiredDate) / (1000 * 60 * 60 * 24 * 365);
-
   if (this.assetType === "Appreciating" && this.appreciatingRate) {
     this.currentValue =
       this.value * Math.pow(1 + this.appreciatingRate / 100, yearsPassed);

@@ -1,7 +1,3 @@
-import {
-  loginController,
-  employeeLoginController,
-  signupController,
-} from "./auth/auth.js";
+import { loginController, signupController } from "./auth/auth.js";
 
-export { loginController, employeeLoginController, signupController };
+export { loginController, signupController };

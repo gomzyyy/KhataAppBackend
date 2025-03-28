@@ -11,14 +11,20 @@ const ownerSchema = new Schema(
     },
     ownerId: {
       type: String,
+      unique: true,
       required: true,
     },
     businessAddress: {
       type: String,
       required: true,
     },
+    equity: {
+      type: Number,
+      required: true,
+    },
     businessName: {
       type: String,
+      unique: true,
       required: true,
     },
     businessPhoneNumber: {
@@ -31,6 +37,9 @@ const ownerSchema = new Schema(
         ref: "Owner",
       },
     ],
+    gstNumber: {
+      type: String,
+    },
     premium: {
       type: String,
       enum: [...PremiumType],

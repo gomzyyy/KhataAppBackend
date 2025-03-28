@@ -1,72 +1,63 @@
-import { AdminRole } from "../../constants/enums.js";
 import { resType } from "../../lib/response.js";
-import { Owner, Employee, Partner } from "../../models/index.js";
+import { Owner, Partner, Employee } from "../../models/index.js";
 import {
   encryptPassword,
   generateToken,
   verifyPassword,
 } from "../../helpers/auth.helper.js";
+import { AdminRole, BusinessType } from "../../constants/enums.js";
 
 export const loginController = async (req, res) => {
   try {
-    const { loginAs, uid } = req.query; //uid === userId #Owner or #Partner
-    const { password } = req.body;
-    if (
-      !uid ||
-      !loginAs ||
-      !AdminRole.includes(loginAs) ||
-      loginAs === "Employee" ||
-      !password
-    ) {
+    console.log("ueruireiu");
+    const { role } = req.query;
+    const { userId, password } = req.body;
+    if (!password || !userId || !role || !AdminRole.includes(role)) {
       return res.status(resType.BAD_REQUEST.code).json({
         message: resType.BAD_REQUEST.message,
         success: false,
       });
     }
-    const modelMap = {
-      Owner: Owner,
-      Partner: Partner,
-    };
 
-    const userModel = modelMap[loginAs];
+    let user;
 
-    if (!userModel) {
+    if (role === "Owner") {
+      user = await Owner.findOne({ ownerId: userId });
+    } else if (role === "Partner") {
+      user = await Partner.findOne({ partnerId: userId });
+    } else if (role === "Employee") {
+      user = await Employee.findOne({ employeeId: userId });
+    } else {
       return res.status(resType.BAD_REQUEST.code).json({
-        message: "Invalid login type",
+        message: resType.BAD_REQUEST.message,
         success: false,
       });
     }
-    const idFieldMap = {
-      Owner: "ownerId",
-      Partner: "partnerId",
-    };
-
-    const idField = idFieldMap[loginAs];
-    const user = await userModel.findOne({ [idField]: uid });
     if (!user) {
       return res.status(resType.NOT_FOUND.code).json({
-        message: resType.NOT_FOUND.message,
+        message: "User not found with the given ID",
         success: false,
       });
     }
     const passwordOk = await verifyPassword(password, user.password);
     if (!passwordOk) {
       return res.status(resType.UNAUTHORIZED.code).json({
-        message: resType.UNAUTHORIZED.message,
+        message: "Invalid password.",
         success: false,
       });
     }
     let token;
     try {
-      token = generateToken({ UID: user[idField] });
+      token = generateToken({ UID: user._id });
     } catch (error) {
+      console.log(error);
       return res.status(resType.BAD_GATEWAY.code).json({
         message: "Token generation failed",
         success: false,
       });
     }
     return res.status(resType.OK.code).json({
-      message: resType.OK.message,
+      message: "Login success.",
       data: {
         user,
         token,
@@ -74,75 +65,9 @@ export const loginController = async (req, res) => {
       success: true,
     });
   } catch (error) {
+    console.log(error);
     return res.status(resType.INTERNAL_SERVER_ERROR.code).json({
-      message: `Error occurred!: ${
-        error instanceof Error
-          ? error.message
-          : resType.INTERNAL_SERVER_ERROR.message
-      }`,
-      success: false,
-    });
-  }
-};
-
-export const employeeLoginController = async (req, res) => {
-  try {
-    const { employeeData, oid } = req.query; //oid === ownerId #Owner
-    if (!employeeData || !oid) {
-      return res.status(resType.BAD_REQUEST.code).json({
-        message: resType.BAD_REQUEST.message,
-        success: false,
-      });
-    }
-    const owner = await Owner.findOne({ ownerId: oid })
-      .populate({ path: "EmployeeData", match: { status: "Active" } })
-      .select("-password");
-
-    if (!owner) {
-      return res.status(resType.NOT_FOUND.code).json({
-        message: "Owner not found with the given ID",
-        success: false,
-      });
-    }
-    if (!employeeData.name) {
-      return res.status(resType.BAD_REQUEST.code).json({
-        message: "Employee name is required",
-        success: false,
-      });
-    }
-    const employee = owner.EmployeeData.find(
-      (s) => s.name.toLowerCase() === employeeData.name.toLowerCase()
-    );
-    if (!employee) {
-      return res.status(resType.NOT_FOUND.code).json({
-        message: "No registered Employee found with the given ID",
-        success: false,
-      });
-    }
-    let token;
-    try {
-      token = generateToken({ employee });
-    } catch (error) {
-      return res.status(resType.BAD_GATEWAY.code).json({
-        message: "Token generation failed",
-        success: false,
-      });
-    }
-    return res.status(resType.OK.code).json({
-      message: "Login success",
-      data: {
-        user: employee,
-        token,
-      },
-      success: true,
-    });
-  } catch (error) {
-    return res.status(resType.INTERNAL_SERVER_ERROR.code).json({
-      message: `Error occurred!: ${
-        error instanceof Error
-          ? error.message
-          : resType.INTERNAL_SERVER_ERROR.message
-      }`,
+      message: `Internal server error.`,
       success: false,
     });
   }
@@ -162,35 +87,58 @@ export const signupController = async (req, res) => {
       businessPhoneNumber, //
       businessDescription,
       businessType, //
+      role,
+      equity,
+      gstNumber,
     } = req.body;
+    console.log(
+      name,
+      email,
+      ownerId,
+      businessAddress,
+      businessPhoneNumber,
+      businessType,
+      businessName,
+      password,
+      role,
+      equity,
+      gstNumber
+    );
     if (
       !name ||
       !email ||
       !ownerId ||
       !businessAddress ||
-      !businessType ||
+      (!businessType && !BusinessType.includes(businessType)) ||
       !businessPhoneNumber ||
       !businessName ||
-      !password
+      !password ||
+      (!role && !AdminRole.includes(role)) ||
+      !equity
     ) {
       return res.status(resType.BAD_REQUEST.code).json({
         message: "Some required fields are missing",
         success: false,
       });
     }
-    const [existingOwnerById, existingOwnerByBusinessName] = await Promise.all([
+    const [
+      existingOwnerById,
+      existingOwnerByBusinessName,
+      existingOwnerByPhoneNumber,
+    ] = await Promise.all([
       Owner.findOne({ ownerId }),
       Owner.findOne({ businessName }),
+      Owner.findOne({ businessPhoneNumber }),
     ]);
 
-    if (existingOwnerById || existingOwnerByBusinessName) {
+    if (
+      existingOwnerById ||
+      existingOwnerByBusinessName ||
+      existingOwnerByPhoneNumber.businessName.toLowerCase() === businessName
+    ) {
       return res.status(resType.BAD_REQUEST.code).json({
         message:
-          existingOwnerById && existingOwnerByBusinessName
-            ? "The owner ID and business name are already in use"
-            : existingOwnerById
-            ? "The owner ID is already used by someone"
-            : "The business name is already acquired by another firm",
+          "Credientials already in use:'ID', 'Business Name', 'Business Phone Number'",
         success: false,
       });
     }
@@ -215,6 +163,9 @@ export const signupController = async (req, res) => {
       businessPhoneNumber,
       businessDescription: businessDescription || null,
       businessType,
+      role,
+      equity,
+      gstNumber,
     };
     const newBusinessOwner = new Owner(newOwnerData);
     await newBusinessOwner.save();
