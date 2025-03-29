@@ -5,7 +5,10 @@ import {
   Shift,
   ReportsToModel,
 } from "../../constants/enums.js";
-import { Employee } from "../../models/index.js";
+import { Employee, Owner } from "../../models/index.js";
+import { encryptPassword } from "../../helpers/auth.helper.js";
+import { resType } from "../../lib/response.js";
+import { AdminRole, Position } from "../../constants/enums.js";
 
 export const createEmployeeController = async (req, res) => {
   try {
@@ -14,30 +17,32 @@ export const createEmployeeController = async (req, res) => {
       employeeId, //
       phoneNumber,
       password, //
-      position,
+      position, //
       positionDescription,
-      role,
+      role, //
       email, //
       address,
-      gender,
-      department,
+      gender, //
+      department, //
       departmentDescription,
-      hireDate,
-      salary,
-      status,
+      salary, //
+      status, //
       statusDescription,
       skills,
-      shift,
+      shift, //
       shiftDescription,
-      reportsTo,
-      reportsToModel,
+      reportsToModel, //
+      businessOwnerId, //
+      hrUid,
     } = req.body;
 
     if (
+      !businessOwnerId ||
       !name ||
       !email ||
       !employeeId ||
       !position ||
+      !Position.includes(position) ||
       !role ||
       !AdminRole.includes(role) ||
       !gender ||
@@ -45,7 +50,6 @@ export const createEmployeeController = async (req, res) => {
       !department ||
       !Department.includes(department) ||
       (department === "Other" && !departmentDescription) ||
-      !hireDate ||
       !salary ||
       !status ||
       !EmploymentStatus.includes(status) ||
@@ -53,33 +57,41 @@ export const createEmployeeController = async (req, res) => {
       !shift ||
       !Shift.includes(shift) ||
       (shift === "Other" && !shiftDescription) ||
-      !reportsTo ||
       !reportsToModel ||
-      !ReportsToModel.includes(reportsToModel)
+      !ReportsToModel.includes(reportsToModel) ||
+      (reportsToModel === "Employee" && !hrUid)
     ) {
       return res.status(resType.BAD_REQUEST.code).json({
         message: "Some required fields are missing",
         success: false,
       });
     }
-    const [
-      existingOwnerById,
-      existingOwnerByBusinessName,
-      existingOwnerByPhoneNumber,
-    ] = await Promise.all([
-      Owner.findOne({ ownerId }),
-      Owner.findOne({ businessName }),
-      Owner.findOne({ businessPhoneNumber }),
-    ]);
 
-    if (
-      existingOwnerById ||
-      existingOwnerByBusinessName ||
-      existingOwnerByPhoneNumber.businessName.toLowerCase() === businessName
-    ) {
-      return res.status(resType.BAD_REQUEST.code).json({
-        message:
-          "Credientials already in use:'ID', 'Business Name', 'Business Phone Number'",
+    const isExisting = await Employee.findOne({ employeeId });
+    if (isExisting) {
+      return res.status(resType.BAD_GATEWAY.code).json({
+        message: "Employee exists with the given ID.",
+        success: false,
+      });
+    }
+
+    const owner = await Owner.findOne({ ownerId: businessOwnerId });
+
+    let hr;
+    if (hrUid) {
+      hr = await Employee.findOne({ employeeId: hrUid, department:'HR' })
+      console.log(hr)
+    }
+    if (reportsToModel === "Employee" && !hr) {
+      return res.status(resType.NOT_FOUND.code).json({
+        message: "HR not found with the given ID.",
+        success: false,
+      });
+    }
+console.log("ljdbi")
+    if (!owner) {
+      return res.status(resType.NOT_FOUND.code).json({
+        message: "Owner not found with the given ID.",
         success: false,
       });
     }
@@ -94,20 +106,29 @@ export const createEmployeeController = async (req, res) => {
 
     const newEmployeeData = {
       name,
+      employeeId,
       phoneNumber: phoneNumber || null,
-      email,
-      address: address || null,
-      ownerId,
       password: encryptedPassword,
-      businessAddress,
-      businessName,
-      businessPhoneNumber,
-      businessDescription: businessDescription || null,
-      businessType,
+      position,
+      positionDescription: positionDescription || null,
       role,
-      equity,
-      gstNumber,
+      email,
+      address,
+      gender,
+      department,
+      departmentDescription: departmentDescription || null,
+      salary,
+      status,
+      statusDescription: statusDescription || null,
+      skills: skills || null,
+      shift,
+      shiftDescription: shiftDescription || null,
+      reportsTo: reportsToModel === "Owner" ? owner._id : hr._id,
+      reportsToModel,
+      businessOwner: owner._id,
+      hireDate: Date.now(),
     };
+
     const newBusinessOwner = new Employee(newEmployeeData);
     await newBusinessOwner.save();
     return res.status(resType.OK.code).json({
