@@ -9,7 +9,6 @@ import { AdminRole, BusinessType } from "../../constants/enums.js";
 
 export const loginController = async (req, res) => {
   try {
-    console.log("ueruireiu");
     const { role } = req.query;
     const { userId, password } = req.body;
     if (!password || !userId || !role || !AdminRole.includes(role)) {

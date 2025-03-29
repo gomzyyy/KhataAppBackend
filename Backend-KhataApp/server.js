@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 // Environment config
 dotenv.config({});
+
 import express from "express";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";

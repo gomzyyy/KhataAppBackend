@@ -13,4 +13,7 @@ export const sharedUser = {
   address: {
     type: String,
   },
+  image: {
+    type: String,
+  },
 };
