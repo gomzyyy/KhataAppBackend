@@ -90,3 +90,4 @@ export const Quantity = [
 
 export const AssetType = ["Depreciating", "Appreciating"];
 export const AssetStatus = ["Active", "Disposed", "Under Maintenance"];
+

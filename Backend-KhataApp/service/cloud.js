@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import { v2 as cloudinary } from "cloudinary";
 import resType from "../lib/response.js";
-import dotenv from "dotenv"
+import dotenv from "dotenv";
 
 dotenv.config({});
 if (
@@ -29,9 +29,35 @@ const connectDB = async () => {
     );
   }
 };
-const uploadToCloudinary = async (assetPath) => {
+const uploadToCloudinary = async ({ path, resourceType = "IMAGE" }) => {
+  if (!path) {
+    return {
+      code: resType.NOT_FOUND.code,
+      url: null,
+    };
+  }
   try {
-    const cloudinaryResponse = await cloudinary.uploader.upload(assetPath);
+    const options = {
+      IMAGE: {
+        resource_type: "image",
+        folder: "image_uploads",
+      },
+      VIDEO: {
+        resource_type: "video",
+        folder: "video_uploads",
+      },
+      RAW: {
+        resource_type: "raw",
+        folder: "nonmedia_uploads",
+      },
+    };
+    if (!options[resourceType]) {
+      throw new Error(`Invalid resource type: ${resourceType}`);
+    }
+    const cloudinaryResponse = await cloudinary.uploader.upload(
+      path,
+      options[resourceType]
+    );
     if (!cloudinaryResponse.url) {
       return {
         code: resType.INTERNAL_SERVER_ERROR.code,

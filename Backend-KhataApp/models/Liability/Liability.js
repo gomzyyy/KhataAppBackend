@@ -27,6 +27,9 @@ const liabilitySchema = new Schema(
       type: Number,
       default: 0,
     },
+    documentUrl: {
+      type: String,
+    },
     startDate: {
       type: Date,
       required: true,

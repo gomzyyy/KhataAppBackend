@@ -55,7 +55,7 @@ export const auth = async (req, res, next) => {
         success: false,
       });
     }
-    req.userId = user._id;
+    req.uid = user._id;
     next();
   } catch (error) {
     return res.status(r.INTERNAL_SERVER_ERROR.code).json({
