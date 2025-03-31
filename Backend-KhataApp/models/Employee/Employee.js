@@ -81,6 +81,66 @@ const employeeSchema = new Schema(
       required: true,
       enum: [...ReportsToModel],
     },
+    permissions: {
+      customer: {
+        create: {
+          type: Boolean,
+          default: false,
+        },
+        update: {
+          type: Boolean,
+          default: false,
+        },
+        delete: {
+          type: Boolean,
+          default: false,
+        },
+      },
+      employee: {
+        create: {
+          type: Boolean,
+          default: false,
+        },
+        update: {
+          type: Boolean,
+          default: false,
+        },
+        delete: {
+          type: Boolean,
+          default: false,
+        },
+      },
+      docs: {
+        create: {
+          type: Boolean,
+          default: false,
+        },
+        update: {
+          type: Boolean,
+          default: false,
+        },
+        delete: {
+          type: Boolean,
+          default: false,
+        },
+      },
+      analytics: {
+        accessable: {
+          type: Boolean,
+          default: false,
+        },
+      },
+    },
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      refPath: "createdByModel",
+      required: true,
+    },
+    createdByModel: {
+      type: String,
+      required: true,
+      enum: [...CreatedByModel],
+    },
   },
   { timestamps: true }
 );

@@ -36,32 +36,50 @@ const partnerSchema = new Schema(
       },
     ],
     permissions: {
-      canCreateCustomer: {
-        type: Boolean,
-        default: true,
-      },
-      canEditCustomer: {
-        type: Boolean,
-        default: true,
-      },
-      canCreateEmployee: {
-        type: Boolean,
-        default: true,
-      },
-      canEditEmployee: {
-        type: Boolean,
-        default: true,
-      },
-      canSeeAnalytics: {
-        type: Boolean,
-        default: true,
-      },
-      canSeeDocs: {
-        assets: {
+      customer: {
+        create: {
           type: Boolean,
           default: true,
         },
-        liabilities: {
+        update: {
+          type: Boolean,
+          default: true,
+        },
+        delete: {
+          type: Boolean,
+          default: true,
+        },
+      },
+      employee: {
+        create: {
+          type: Boolean,
+          default: true,
+        },
+        update: {
+          type: Boolean,
+          default: true,
+        },
+        delete: {
+          type: Boolean,
+          default: true,
+        },
+      },
+      docs: {
+        create: {
+          type: Boolean,
+          default: true,
+        },
+        update: {
+          type: Boolean,
+          default: true,
+        },
+        delete: {
+          type: Boolean,
+          default: true,
+        },
+      },
+      analytics: {
+        accessable: {
           type: Boolean,
           default: true,
         },

@@ -3,7 +3,11 @@ import { sharedProduct } from "../Shared/shared.product.js";
 
 const soldProductSchema = new Schema(
   {
-    ...sharedProduct,
+    product: {
+      type: Schema.Types.ObjectId,
+      ref: "Product",
+      required: true,
+    },
     buyer: {
       type: Schema.Types.ObjectId,
       ref: "Customer",

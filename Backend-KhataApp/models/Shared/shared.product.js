@@ -7,7 +7,6 @@ export const sharedProduct = {
   },
   image: {
     type: String,
-    default: "",
   },
   totalSold: {
     type: Number,
@@ -38,5 +37,15 @@ export const sharedProduct = {
   productCost: {
     type: Number,
     required: true,
+  },
+  createdBy: {
+    type: Schema.Types.ObjectId,
+    refPath: "createdByModel",
+    required: true,
+  },
+  createdByModel: {
+    type: String,
+    required: true,
+    enum: [...CreatedByModel],
   },
 };

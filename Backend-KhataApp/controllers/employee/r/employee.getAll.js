@@ -1,5 +1,5 @@
 import { Owner } from "../../models.js";
-import resType from "../../lib/response.js";
+import resType from "../../../lib/response.js";
 
 export const getEmployeeListController = async (req, res) => {
   try {

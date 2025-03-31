@@ -1,14 +1,13 @@
-import { AdminRole } from "../../constants/enums.js";
-import resType from "../../lib/response.js";
-import { Asset } from "../../models/index.js";
-import { uploadToCloudinary } from "../../service/cloud.js";
+import mongoose from "mongoose";
+import { Owner } from "../../../models/index.js";
+import resType from "../../../lib/response.js";
 
-export const setAssetDocController = async (req, res) => {
+export const updateOwnerProfilePhoto = async (req, res) => {
   try {
-    const { assetId } = req.query;
-    if (!assetId) {
-      return res.status(resType.BAD_REQUEST.code).json({
-        message: "Cannot find asset from the database.",
+    const uid = req.uid;
+    if (!uid) {
+      return res.status(resType.UNAUTHORIZED.code).json({
+        message: "Unauthorized action.",
         success: false,
       });
     }
@@ -19,16 +18,26 @@ export const setAssetDocController = async (req, res) => {
       });
     }
     const { path } = req.file;
-    const asset = await Asset.findById(assetId);
-    if (!asset) {
-      return res.status(resType.NOT_FOUND.code).json({
-        message: "Requested asset not found from the database.",
+
+    let user;
+    if (mongoose.Types.ObjectId.isValid(uid)) {
+      user = await Owner.findById(uid);
+    } else {
+      return res.status(resType.BAD_REQUEST.code).json({
+        message: "Invalid Object ID.",
+        success: false,
+      });
+    }
+
+    if (!user) {
+      return res.status(r.NOT_FOUND.code).json({
+        message: "Token credientials didn't match to any user",
         success: false,
       });
     }
     const { code, url } = await uploadToCloudinary({
       path,
-      resourceType: "RAW",
+      resourceType: "IMAGE",
     });
     if (code !== resType.OK.code || !url || url.trim().length === 0) {
       return res.status(resType.BAD_REQUEST.code).json({
@@ -37,16 +46,15 @@ export const setAssetDocController = async (req, res) => {
       });
     }
     try {
-      asset.documentUrl = url;
-      await asset.save();
+      user.image = url;
+      await user.save();
     } catch (error) {
       console.error("Error saving user image:", error);
       return res.status(resType.INTERNAL_SERVER_ERROR.code).json({
-        message: "Failed to save document.",
+        message: "Failed to save user image.",
         success: false,
       });
     }
-
     return res.status(resType.OK.code).json({
       message: "Success.",
       data: { imageUrl: url },

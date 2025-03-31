@@ -9,12 +9,15 @@ import { Employee, Owner } from "../../models/index.js";
 import { encryptPassword } from "../../helpers/auth.helper.js";
 import { resType } from "../../lib/response.js";
 import { AdminRole, Position } from "../../constants/enums.js";
+import { CreatedByModel } from "../../../constants/enums.js";
 
 export const createEmployeeController = async (req, res) => {
   try {
+    const { creatorId, createdBy } = req.query;
     const {
       name, //
       employeeId, //
+      image,
       phoneNumber,
       password, //
       position, //
@@ -67,20 +70,53 @@ export const createEmployeeController = async (req, res) => {
       });
     }
 
+    if (!creatorId || !createdBy || !CreatedByModel.includes(createdBy)) {
+      return res.status(resType.BAD_REQUEST.code).json({
+        message: "You are not authorised of this action.",
+        success: false,
+      });
+    }
+    let creator;
+    if (mongoose.Types.ObjectId.isValid(creatorId)) {
+      if (createdBy === "Partner") {
+        creator = await Partner.findOne({
+          _id: creatorId,
+          "permissions.customer.create": true,
+        })?.select("-password");
+      } else if (createdBy === "Employee") {
+        creator = await Employee.findOne({
+          _id: creatorId,
+          "permissions.customer.create": true,
+        })?.select("-password");
+      } else {
+        creator = await Owner.findById(creatorId);
+      }
+    } else {
+      return res.status(resType.BAD_REQUEST.code).json({
+        message: "Invalid creator Object ID.",
+        success: false,
+      });
+    }
+    if (!creator) {
+      return res.status(resType.NOT_FOUND.code).json({
+        message: "You are not an Authorised user to perform this action",
+        success: false,
+      });
+    }
+
     const isExisting = await Employee.findOne({ employeeId });
     if (isExisting) {
-      return res.status(resType.BAD_GATEWAY.code).json({
+      return res.status(resType.CONFLICT.code).json({
         message: "Employee exists with the given ID.",
         success: false,
       });
     }
 
-    const owner = await Owner.findOne({ ownerId: businessOwnerId });
+    const owner = await Owner.findById(businessOwnerId);
 
     let hr;
     if (hrUid) {
-      hr = await Employee.findOne({ employeeId: hrUid, department:'HR' })
-      console.log(hr)
+      hr = await Employee.findOne({ employeeId: hrUid, department: "HR" });
     }
     if (reportsToModel === "Employee" && !hr) {
       return res.status(resType.NOT_FOUND.code).json({
@@ -88,7 +124,6 @@ export const createEmployeeController = async (req, res) => {
         success: false,
       });
     }
-console.log("ljdbi")
     if (!owner) {
       return res.status(resType.NOT_FOUND.code).json({
         message: "Owner not found with the given ID.",
@@ -107,26 +142,29 @@ console.log("ljdbi")
     const newEmployeeData = {
       name,
       employeeId,
-      phoneNumber: phoneNumber || null,
+      phoneNumber: phoneNumber || undefined,
       password: encryptedPassword,
       position,
-      positionDescription: positionDescription || null,
+      positionDescription: positionDescription || undefined,
       role,
+      image: image || undefined,
       email,
       address,
       gender,
       department,
-      departmentDescription: departmentDescription || null,
+      departmentDescription: departmentDescription || undefined,
       salary,
       status,
-      statusDescription: statusDescription || null,
-      skills: skills || null,
+      statusDescription: statusDescription || undefined,
+      skills: skills || undefined,
       shift,
-      shiftDescription: shiftDescription || null,
+      shiftDescription: shiftDescription || undefined,
       reportsTo: reportsToModel === "Owner" ? owner._id : hr._id,
       reportsToModel,
       businessOwner: owner._id,
-      hireDate: Date.now(),
+      hireDate: new Date(),
+      createdBy: creator._id,
+      createdByModel: createdBy,
     };
 
     const newBusinessOwner = new Employee(newEmployeeData);

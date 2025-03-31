@@ -1,14 +1,11 @@
-import { AdminRole } from "../../constants/enums.js";
-import resType from "../../lib/response.js";
-import { Owner, Employee, Customer, Partner } from "../../models/index.js";
-import { uploadToCloudinary } from "../../service/cloud.js";
+import mongoose from "mongoose";
+import { Employee } from "../../../models/index.js";
+import resType from "../../../lib/response.js";
 
-export const setImageController = async (req, res) => {
+export const updateEmployeeProfilePhoto = async (req, res) => {
   try {
     const uid = req.uid;
-    const { role } = req.query;
-
-    if (!uid || !role || !AdminRole.includes(role)) {
+    if (!uid) {
       return res.status(resType.UNAUTHORIZED.code).json({
         message: "Unauthorized action.",
         success: false,
@@ -22,13 +19,15 @@ export const setImageController = async (req, res) => {
     }
     const { path } = req.file;
     let user;
-    if (role === "Owner") {
-      user = await Owner.findOne({ ownerId: uid });
-    } else if (role === "Partner") {
-      user = await Partner.findOne({ partnerId: uid });
-    } else if (role === "Employee") {
-      user = await Employee.findOne({ employeeId: uid });
+    if (mongoose.Types.ObjectId.isValid(uid)) {
+      user = await Employee.findById(uid);
+    } else {
+      return res.status(resType.BAD_REQUEST.code).json({
+        message: "Invalid Object ID.",
+        success: false,
+      });
     }
+
     if (!user) {
       return res.status(r.NOT_FOUND.code).json({
         message: "Token credientials didn't match to any user",

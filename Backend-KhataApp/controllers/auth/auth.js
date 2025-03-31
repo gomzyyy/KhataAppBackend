@@ -89,20 +89,9 @@ export const signupController = async (req, res) => {
       role,
       equity,
       gstNumber,
+      image,
     } = req.body;
-    console.log(
-      name,
-      email,
-      ownerId,
-      businessAddress,
-      businessPhoneNumber,
-      businessType,
-      businessName,
-      password,
-      role,
-      equity,
-      gstNumber
-    );
+
     if (
       !name ||
       !email ||
@@ -152,19 +141,20 @@ export const signupController = async (req, res) => {
 
     const newOwnerData = {
       name,
-      phoneNumber: phoneNumber || null,
+      phoneNumber: phoneNumber || undefined,
       email,
-      address: address || null,
+      address: address || undefined,
       ownerId,
       password: encryptedPassword,
       businessAddress,
       businessName,
       businessPhoneNumber,
-      businessDescription: businessDescription || null,
+      businessDescription: businessDescription || undefined,
       businessType,
       role,
       equity,
       gstNumber,
+      image: image || undefined,
     };
     const newBusinessOwner = new Owner(newOwnerData);
     await newBusinessOwner.save();
