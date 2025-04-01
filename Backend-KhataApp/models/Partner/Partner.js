@@ -61,6 +61,20 @@ const partnerSchema = new Schema(
           default: true,
         },
       },
+      product:{
+        create: {
+          type: Boolean,
+          default: true,
+        },
+        update: {
+          type: Boolean,
+          default: true,
+        },
+        delete: {
+          type: Boolean,
+          default: true,
+        },
+      },
       docs: {
         create: {
           type: Boolean,
