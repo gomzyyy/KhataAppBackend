@@ -1,5 +1,5 @@
 import { Schema, model } from "mongoose";
-import { sharedProduct } from "../Shared/shared.product.js";
+import { SoldByModel } from "../../constants/enums.js";
 
 const soldProductSchema = new Schema(
   {
@@ -15,6 +15,16 @@ const soldProductSchema = new Schema(
     },
     count: {
       type: Number,
+      required: true,
+    },
+    soldBy: {
+      type: Schema.Types.ObjectId,
+      refPath: "soldByModel",
+      required: true,
+    },
+    soldByModel: {
+      type: String,
+      enum: [...SoldByModel],
       required: true,
     },
   },
