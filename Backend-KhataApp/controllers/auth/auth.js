@@ -60,6 +60,7 @@ export const loginController = async (req, res) => {
       data: {
         user,
         token,
+        sessionId: Date.now(),
       },
       success: true,
     });

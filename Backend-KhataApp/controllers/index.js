@@ -3,7 +3,7 @@ import { updateCustomerProfilePhoto } from "./customer/u/updateCustomerProfilePh
 import { updateEmployeeProfilePhoto } from "./employee/u/updateEmployeeProfilePhoto.js";
 import { updateOwnerProfilePhoto } from "./owner/u/updateOwnerProfilePhoto.js";
 import { createEmployeeController } from "./employee/c/employee.create.js";
-import { createPartnerController } from "./partner/partner.create.js";
+import { createPartnerController } from "./partner/c/partner.create.js";
 import { createCustomerController } from "./customer/c/customer.create.js";
 
 export {

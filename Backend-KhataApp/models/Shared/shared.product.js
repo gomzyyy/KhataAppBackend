@@ -1,4 +1,5 @@
-import { Quantity } from "../../constants/enums.js";
+import { CreatedByModel, Quantity } from "../../constants/enums.js";
+import { Schema } from "mongoose";
 
 export const sharedProduct = {
   name: {
@@ -28,7 +29,7 @@ export const sharedProduct = {
     enum: [...Quantity],
   },
   measurementTypeDescription: {
-    type: string,
+    type: String,
   },
   stock: {
     type: Number,

@@ -4,12 +4,13 @@ import {
   EmploymentStatus,
   Shift,
   ReportsToModel,
-} from "../../constants/enums.js";
-import { Employee, Owner } from "../../models/index.js";
-import { encryptPassword } from "../../helpers/auth.helper.js";
-import { resType } from "../../lib/response.js";
-import { AdminRole, Position } from "../../constants/enums.js";
-import { CreatedByModel } from "../../../constants/enums.js";
+  CreatedByModel,
+  Position,
+  AdminRole,
+} from "../../../constants/enums.js";
+import { Employee, Owner } from "../../../models/index.js";
+import { encryptPassword } from "../../../helpers/auth.helper.js";
+import { resType } from "../../../lib/response.js";
 
 export const createEmployeeController = async (req, res) => {
   try {
@@ -134,7 +135,7 @@ export const createEmployeeController = async (req, res) => {
     const encryptedPassword = await encryptPassword(password);
     if (!encryptedPassword) {
       return res.status(resType.BAD_REQUEST.code).json({
-        message: "Error occured while encrypting user credientials",
+        message: "Error occured while encrypting user credentials",
         success: false,
       });
     }
@@ -167,12 +168,12 @@ export const createEmployeeController = async (req, res) => {
       createdByModel: createdBy,
     };
 
-    const newBusinessOwner = new Employee(newEmployeeData);
-    await newBusinessOwner.save();
+    const newEmployee = new Employee(newEmployeeData);
+    await newEmployee.save();
     return res.status(resType.OK.code).json({
       message: "Signup success",
       data: {
-        user: newBusinessOwner,
+        user: newEmployee,
       },
       success: true,
     });

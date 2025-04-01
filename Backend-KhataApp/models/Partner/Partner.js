@@ -27,9 +27,6 @@ const partnerSchema = new Schema(
       enum: [...AdminRole],
       required: true,
     },
-    sessionId: {
-      type: Number,
-    },
     accessPasscode: [
       {
         type: String,

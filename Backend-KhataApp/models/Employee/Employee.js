@@ -1,6 +1,7 @@
 import { Schema, model } from "mongoose";
 import { sharedUser } from "../Shared/shared.user.js";
 import {
+  CreatedByModel,
   Department,
   EmploymentStatus,
   Gender,

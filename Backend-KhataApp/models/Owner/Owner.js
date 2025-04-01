@@ -86,9 +86,7 @@ const ownerSchema = new Schema(
         ref: "Liability",
       },
     ],
-    sessionId: {
-      type: Number,
-    },
+
     accessPasscode: [
       {
         type: String,
