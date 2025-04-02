@@ -5,6 +5,9 @@ import { updateOwnerProfilePhoto } from "./owner/u/updateOwnerProfilePhoto.js";
 import { createEmployeeController } from "./employee/c/employee.create.js";
 import { createPartnerController } from "./partner/c/partner.create.js";
 import { createCustomerController } from "./customer/c/customer.create.js";
+import { createProductController } from "./product/c/product.create.js";
+import { createSoldProductController } from "./soldProduct/c/soldProduct.create.js";
+import { deleteSoldProductController } from "./soldProduct/d/soldProduct.delete.js";
 
 export {
   loginController,
@@ -15,4 +18,7 @@ export {
   createEmployeeController,
   createCustomerController,
   createPartnerController,
+  createProductController,
+  createSoldProductController,
+  deleteSoldProductController
 };

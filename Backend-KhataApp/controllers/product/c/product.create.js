@@ -1,11 +1,11 @@
-import { Product } from "../../../models/index.js";
-import { CreatedByModel } from "../../../constants/enums.js";
+import { Employee, Owner, Partner, Product } from "../../../models/index.js";
+import { CreatedByModel, MeasurementType } from "../../../constants/enums.js";
 import { resType } from "../../../lib/response.js";
 import mongoose from "mongoose";
 
 export const createProductController = async (req, res) => {
   try {
-    const { creatorId, createdBy } = req.query;
+    const { creatorId, role } = req.query;
     const {
       name,
       image,
@@ -22,11 +22,14 @@ export const createProductController = async (req, res) => {
       !name ||
       !basePrice ||
       !quantity ||
+      !measurementType ||
+      !MeasurementType.includes(measurementType) ||
+      (measurementType === "Other" && !measurementTypeDescription) ||
       !stock ||
       !productCost ||
       !creatorId ||
-      !createdBy ||
-      !CreatedByModel.includes(createdBy)
+      !role ||
+      !CreatedByModel.includes(role)
     ) {
       return res.status(resType.BAD_REQUEST.code).json({
         message: "Some required fields are missing.",
@@ -52,6 +55,27 @@ export const createProductController = async (req, res) => {
         success: false,
       });
     }
+    let creator;
+    if (role === "Owner") {
+      creator = await Owner.findById(creatorId);
+    } else if (role === "Partner") {
+      creator = await Partner.findOne({
+        _id: creatorId,
+        "permissions.product.create": true,
+      });
+    } else if (role === "Employee") {
+      creator = await Employee.findOne({
+        _id: creatorId,
+        "permissions.product.create": true,
+      });
+    }
+
+    if (!creator) {
+      return res.status(resType.NOT_FOUND.code).json({
+        message: "You are not authorised for this action.",
+        success: false,
+      });
+    }
 
     const newProductData = {
       name,
@@ -64,8 +88,8 @@ export const createProductController = async (req, res) => {
       measurementTypeDescription: measurementTypeDescription || undefined,
       stock,
       productCost,
-      createdBy: creatorId,
-      createdByModel: createdBy,
+      createdBy: creator._id,
+      createdByModel: role,
     };
 
     const newProduct = new Product(newProductData);

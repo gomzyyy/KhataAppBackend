@@ -11,8 +11,8 @@ export const createPartnerController = async (req, res) => {
       name, //
       image,
       phoneNumber, //
+      role,
       password, //
-      role, //
       email, //
       address,
       businessOwnerId, //
@@ -24,8 +24,8 @@ export const createPartnerController = async (req, res) => {
       !businessOwnerId ||
       !name ||
       !email ||
-      !role ||
       !password ||
+      !role ||
       !equity ||
       !partnerId ||
       !phoneNumber ||
@@ -122,7 +122,7 @@ export const createPartnerController = async (req, res) => {
     owner.equity -= equity;
     await owner.save();
     return res.status(resType.OK.code).json({
-      message: "Signup success",
+      message: "partner created successfully",
       data: {
         user: newPartner,
       },

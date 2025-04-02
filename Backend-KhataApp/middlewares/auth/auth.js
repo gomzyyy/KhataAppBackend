@@ -2,6 +2,7 @@ import { resType as r } from "../../lib/response.js";
 import { Owner, Employee, Partner } from "../../models/index.js";
 import { validateToken } from "../../helpers/auth.helper.js";
 import { AdminRole } from "../../constants/enums.js";
+import mongoose from "mongoose";
 
 export const auth = async (req, res, next) => {
   try {
@@ -52,6 +53,12 @@ export const auth = async (req, res, next) => {
     if (!user) {
       return res.status(r.NOT_FOUND.code).json({
         message: "Token credientials didn't match to any user",
+        success: false,
+      });
+    }
+    if(!mongoose.Types.ObjectId.isValid(user._id)){
+      return res.status(r.BAD_REQUEST.code).json({
+        message: "invalid Object ID. error at mw:auth.js",
         success: false,
       });
     }

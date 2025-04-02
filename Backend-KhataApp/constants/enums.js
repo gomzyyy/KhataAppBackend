@@ -78,7 +78,7 @@ export const EmploymentStatus = [
 ];
 export const Shift = ["Morning", "Evening", "Night", "Undecided", "Other"];
 
-export const Quantity = [
+export const MeasurementType = [
   "Ml",
   "Litre",
   "Kilogram",
