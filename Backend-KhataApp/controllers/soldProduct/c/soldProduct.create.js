@@ -4,7 +4,7 @@ import {
   Customer,
   Owner,
   Employee,
-  Partner
+  Partner,
 } from "../../../models/index.js";
 import { resType } from "../../../lib/response.js";
 import mongoose from "mongoose";
@@ -21,7 +21,9 @@ export const createSoldProductController = async (req, res) => {
     if (
       !productId ||
       !buyerId ||
-      !count ||
+      count === 0 ||
+      count < 0 ||
+      count == null ||
       !AdminRole.includes(role) ||
       !sellerId
     ) {
@@ -45,6 +47,14 @@ export const createSoldProductController = async (req, res) => {
         success: false,
       });
     }
+    if (buyerId === sellerId) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(resType.BAD_REQUEST.code).json({
+        message: "A seller cannot buy their own product.",
+        success: false,
+      });
+    }
     const product = await Product.findById(productId).session(session);
     if (!product) {
       await session.abortTransaction();
@@ -55,14 +65,14 @@ export const createSoldProductController = async (req, res) => {
       });
     }
 
-if( product.stock === 0 ||product.stock < count){
-  await session.abortTransaction();
-  session.endSession();
-  return res.status(resType.UNPROCESSABLE_ENTITY.code).json({
-    message: "Insufficient stocks.",
-    success: false,
-  }); 
-}
+    if (product.stock < count) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(resType.UNPROCESSABLE_ENTITY.code).json({
+        message: "Insufficient stocks.",
+        success: false,
+      });
+    }
 
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
@@ -87,7 +97,7 @@ if( product.stock === 0 ||product.stock < count){
 
       return res.status(resType.OK.code).json({
         message: "Product sold successfully!",
-        data: { soldProduct: alreadySold},
+        data: { soldProduct: alreadySold },
         success: true,
       });
     }
@@ -130,11 +140,15 @@ if( product.stock === 0 ||product.stock < count){
       count,
     });
 
-    await newSoldProduct.save({ session });
-
+    buyer.buyedProducts.push(newSoldProduct._id);
     product.stock -= count;
     product.totalSold += count;
-    await product.save({ session });
+
+    await Promise.all([
+      product.save({ session }),
+      newSoldProduct.save({ session }),
+      buyer.save({ session }),
+    ]);
 
     await session.commitTransaction();
     session.endSession();

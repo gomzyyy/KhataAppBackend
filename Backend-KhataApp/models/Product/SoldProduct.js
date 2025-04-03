@@ -17,6 +17,11 @@ const soldProductSchema = new Schema(
       type: Number,
       required: true,
     },
+    paid: {
+      type: Boolean,
+      default: false,
+      required: true,
+    },
     soldBy: {
       type: Schema.Types.ObjectId,
       refPath: "soldByModel",

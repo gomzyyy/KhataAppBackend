@@ -6,6 +6,10 @@ export const sharedProduct = {
     type: String,
     required: true,
   },
+  businessOwner: {
+    type: Schema.Types.ObjectId,
+    ref: "Owner",
+  },
   image: {
     type: String,
   },

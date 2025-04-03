@@ -8,6 +8,7 @@ import { createCustomerController } from "./customer/c/customer.create.js";
 import { createProductController } from "./product/c/product.create.js";
 import { createSoldProductController } from "./soldProduct/c/soldProduct.create.js";
 import { deleteSoldProductController } from "./soldProduct/d/soldProduct.delete.js";
+import { getSoldProductsController } from "./soldProduct/r/soldProduct.read.js";
 
 export {
   loginController,
@@ -20,5 +21,6 @@ export {
   createPartnerController,
   createProductController,
   createSoldProductController,
-  deleteSoldProductController
+  deleteSoldProductController,
+  getSoldProductsController
 };

@@ -24,8 +24,7 @@ const customerSchema = new Schema(
       ref: "Owner",
       required: true,
     },
-    unpaidPayments: [{ type: Schema.Types.ObjectId, ref: "SoldProduct" }],
-    paidPayments: [{ type: Schema.Types.ObjectId, ref: "SoldProduct" }],
+    buyedProducts: [{ type: Schema.Types.ObjectId, ref: "SoldProduct" }],
     createdBy: {
       type: Schema.Types.ObjectId,
       refPath: "createdByModel",

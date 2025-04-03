@@ -92,7 +92,7 @@ export const signupController = async (req, res) => {
       gstNumber,
       image,
     } = req.body;
-
+    console.log(req.body);
     if (
       !name ||
       !email ||
@@ -123,7 +123,8 @@ export const signupController = async (req, res) => {
     if (
       existingOwnerById ||
       existingOwnerByBusinessName ||
-      existingOwnerByPhoneNumber.businessName.toLowerCase() === businessName
+      (existingOwnerByPhoneNumber &&
+        existingOwnerByPhoneNumber.businessName.toLowerCase() === businessName)
     ) {
       return res.status(resType.BAD_REQUEST.code).json({
         message:

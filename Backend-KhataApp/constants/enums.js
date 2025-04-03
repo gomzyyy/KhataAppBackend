@@ -6,11 +6,19 @@ export const BusinessType = [
   "Distribution",
   "Other",
 ];
-export const ReportsToModel = ["Owner","Partner","Employee"];
-export const CreatedByModel=["Owner","Partner","Employee"];
-export const SoldByModel=["Owner","Partner","Employee"];
+export const ReportsToModel = ["Owner", "Partner", "Employee"];
+export const CreatedByModel = ["Owner", "Partner", "Employee"];
+export const SoldByModel = ["Owner", "Partner", "Employee"];
 export const PremiumType = ["Regular", "Silver", "Gold"];
 export const AdminRole = ["Owner", "Employee", "Partner"];
+export const RequestForSoldProduct = [
+  "ALL",
+  "PAID_ALL",
+  "UNPAID_ALL",
+  "CUSTOMER_PAID",
+  "CUSTOMER_UNPAID",
+  "CUSTOMER_ALL",
+];
 export const Gender = ["Male", "Female", "Rather not to say", "Other"];
 export const Department = [
   "IT", // Information Technology
@@ -91,4 +99,3 @@ export const MeasurementType = [
 
 export const AssetType = ["Depreciating", "Appreciating"];
 export const AssetStatus = ["Active", "Disposed", "Under Maintenance"];
-
