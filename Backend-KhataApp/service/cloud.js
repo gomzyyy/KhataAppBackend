@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { v2 as cloudinary } from "cloudinary";
 import resType from "../lib/response.js";
 import dotenv from "dotenv";
+import { getCloudinaryPublicIdFromUrl } from "../helpers/auth.helper.js";
 
 dotenv.config({});
 if (
@@ -29,7 +30,10 @@ const connectDB = async () => {
     );
   }
 };
-const uploadToCloudinary = async ({ path, resourceType = "IMAGE" }) => {
+const uploadToCloudinary = async ({
+  path,
+  resourceType = "IMAGE",
+}) => {
   if (!path) {
     return {
       code: resType.NOT_FOUND.code,
@@ -76,4 +80,33 @@ const uploadToCloudinary = async ({ path, resourceType = "IMAGE" }) => {
   }
 };
 
-export { connectDB, uploadToCloudinary };
+const deleteFromCloudinary = async (url) => {
+  try {
+    if (!url) {
+      return {
+        code: resType.NOT_FOUND.code,
+        message: "Url is not provided.",
+      };
+    }
+    const publicId = getCloudinaryPublicIdFromUrl(url);
+    if (!publicId) {
+      return {
+        code: resType.INTERNAL_SERVER_ERROR.code,
+        message: "Public ID not found",
+      };
+    }
+    await cloudinary.uploader.destroy(publicId);
+    return {
+      code: resType.OK.code,
+      message: "Image deleted successfully",
+    };
+  } catch (error) {
+    return {
+      code: resType.INTERNAL_SERVER_ERROR.code,
+      message:
+        error instanceof Error ? error.message : "Failed to delete the image",
+    };
+  }
+};
+
+export { connectDB, uploadToCloudinary, deleteFromCloudinary };

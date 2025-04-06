@@ -6,6 +6,7 @@ import {
   SoldProduct,
   Owner,
   Employee,
+  SoldProductPaymentHistory,
 } from "../../../models/index.js";
 import resType from "../../../lib/response.js";
 
@@ -87,13 +88,20 @@ export const deleteSoldProductController = async (req, res) => {
         success: false,
       });
     }
-
+    const soldProductPaymentHistory = await SoldProductPaymentHistory.findOne({
+      referenceId: soldProductId,
+      referenceType: "SoldProduct",
+    }).session(session);
+    if (soldProductPaymentHistory) {
+      soldProductPaymentHistory.disabled = true;
+    }
     product.totalSold -= foundSoldProduct.count;
     product.stock += foundSoldProduct.count;
 
     await Promise.all([
       product.save({ session }),
       foundSoldProduct.deleteOne({ session }),
+      soldProductPaymentHistory.save({ session }),
     ]);
     await session.commitTransaction();
     return res.status(resType.OK.code).json({

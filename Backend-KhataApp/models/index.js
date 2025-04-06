@@ -6,5 +6,19 @@ import Asset from "./Asset/Asset.js";
 import Liability from "./Liability/Liability.js";
 import Product from "./Product/Product.js";
 import SoldProduct from "./Product/SoldProduct.js";
-
-export { Owner, Employee, Partner, Customer, Asset, Liability,Product,SoldProduct };
+import AccountType from "./AccountType/AccountType.js";
+import SoldProductPaymentHistory from "./History/PaymentHistory/SoldProductPaymentHistory.js";
+import UnknownPaymentHistory from "./History/PaymentHistory/UnknownPaymentHistory.js";
+export {
+  Owner,
+  Employee,
+  Partner,
+  Customer,
+  Asset,
+  Liability,
+  Product,
+  SoldProduct,
+  AccountType,
+  SoldProductPaymentHistory,
+  UnknownPaymentHistory,
+};

@@ -34,4 +34,20 @@ const verifyPassword = async (password, hash) => {
   return ok;
 };
 
-export { generateToken, validateToken, encryptPassword, verifyPassword };
+const getCloudinaryPublicIdFromUrl = (url) => {
+  if (!url || typeof url !== "string") return null;
+  const parts = url.split("/");
+  if (parts.length < 2) return null;
+  const fileWithExtension = parts.at(-1);
+  const folder = parts.at(-2);
+  const [publicId] = fileWithExtension.split(".");
+  return `${folder}/${publicId}`;
+};
+
+export {
+  generateToken,
+  validateToken,
+  encryptPassword,
+  verifyPassword,
+  getCloudinaryPublicIdFromUrl,
+};

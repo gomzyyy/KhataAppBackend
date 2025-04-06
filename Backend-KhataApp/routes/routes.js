@@ -10,6 +10,10 @@ import {
   createCustomerController,
   deleteSoldProductController,
   getSoldProductsController,
+  updateOwnerPropertiesController,
+  updateOwnerController,
+  getOwnerInfoController,
+  updateSoldProductController
 } from "../controllers/index.js";
 import { uploadImage } from "../middlewares/index.js";
 import { auth } from "../middlewares/index.js";
@@ -25,14 +29,24 @@ routes.post("/signup", signupController);
 routes.post("/create/employee", createEmployeeController); //
 routes.post("/create/customer", createCustomerController); //
 routes.post("/create/partner", createPartnerController); //
-routes.post("/create/product",  createProductController); //
-routes.post("/sell/product",  createSoldProductController); //
+routes.post("/create/product", createProductController); //
+routes.post("/sell/product", createSoldProductController); //
 
 //delete
-routes.post("/delete/sold-product",  deleteSoldProductController);//
+routes.post("/delete/sold-product", deleteSoldProductController); //
 
 //read
-routes.get("/get/sold-products", getSoldProductsController);//
+routes.get("/get/sold-products", getSoldProductsController); //
+routes.get("/get/owner/info", getOwnerInfoController); //
+
+//update
+routes.post("/update/owner/properties", updateOwnerPropertiesController); //
+routes.post(
+  "/update/owner",
+  uploadImage.single("image"),
+  updateOwnerController
+); //
+routes.post("update/sold-product",updateSoldProductController)//
 
 routes.post("/upload/image/test", uploadImage.single("img"), (req, res) => {
   console.log(req.file.path);

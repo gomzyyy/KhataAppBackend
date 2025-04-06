@@ -125,6 +125,20 @@ const employeeSchema = new Schema(
           default: false,
         },
       },
+      soldProduct: {
+        create: {
+          type: Boolean,
+          default: true,
+        },
+        update: {
+          type: Boolean,
+          default: true,
+        },
+        delete: {
+          type: Boolean,
+          default: true,
+        },
+      },
       docs: {
         create: {
           type: Boolean,

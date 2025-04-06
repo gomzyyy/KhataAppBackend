@@ -1,5 +1,5 @@
 import { Schema, model } from "mongoose";
-import { SoldByModel } from "../../constants/enums.js";
+import { SoldByModel, PaymentState } from "../../constants/enums.js";
 
 const soldProductSchema = new Schema(
   {
@@ -17,10 +17,10 @@ const soldProductSchema = new Schema(
       type: Number,
       required: true,
     },
-    paid: {
-      type: Boolean,
-      default: false,
-      required: true,
+    state: {
+      type: String,
+      enum: [...PaymentState],
+      default: "UNPAID",
     },
     soldBy: {
       type: Schema.Types.ObjectId,

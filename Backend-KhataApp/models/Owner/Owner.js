@@ -1,6 +1,11 @@
-import { Schema, model } from "mongoose";
+import mongoose, { Schema, model } from "mongoose";
 import { sharedUser } from "../Shared/shared.user.js";
-import { AdminRole, BusinessType, PremiumType } from "../../constants/enums.js";
+import {
+  AdminRole,
+  BusinessType,
+  CreatedByModel,
+  PremiumType,
+} from "../../constants/enums.js";
 
 const ownerSchema = new Schema(
   {
@@ -34,16 +39,64 @@ const ownerSchema = new Schema(
     businessPartners: [
       {
         type: Schema.Types.ObjectId,
-        ref: "Owner",
+        ref: "Partner",
       },
     ],
     gstNumber: {
       type: String,
     },
-    premium: {
-      type: String,
-      enum: [...PremiumType],
-      default: "Regular",
+    accountType: {
+      type: Schema.Types.ObjectId,
+      ref: "AccountType",
+    },
+    history: {
+      payments: [
+        {
+          paymentId: {
+            type: Schema.Types.ObjectId,
+            refPath: "paymentType",
+          },
+          paymentType: {
+            type: String,
+            enum: ["SoldProductPaymentHistory", "UnknownPaymentHistory"],
+          },
+          createdAt: Date,
+          createdBy: {
+            type: Schema.Types.ObjectId,
+            refPath: "paymentType",
+          },
+          createdByModel: {
+            type: String,
+            enum: [...CreatedByModel],
+          },
+        },
+      ],
+    },
+    properties: {
+      searchable: {
+        type: Boolean,
+        default: true,
+      },
+      isDisabled: {
+        type: Boolean,
+        default: false,
+      },
+      accessBusinessInfo: {
+        type: Boolean,
+        default: true,
+      },
+      isPrivate: {
+        type: Boolean,
+        default: false,
+      },
+      partnerSearchable: {
+        type: Boolean,
+        default: true,
+      },
+      employeeSearchable: {
+        type: Boolean,
+        default: true,
+      },
     },
     businessDescription: {
       type: String,
@@ -59,10 +112,12 @@ const ownerSchema = new Schema(
         ref: "Employee",
       },
     ],
-    inventory: {
-      type: Schema.Types.ObjectId,
-      ref: "Product",
-    },
+    inventory: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Product",
+      },
+    ],
     customers: [
       {
         type: Schema.Types.ObjectId,

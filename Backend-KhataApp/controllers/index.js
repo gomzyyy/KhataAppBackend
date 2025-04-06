@@ -9,6 +9,10 @@ import { createProductController } from "./product/c/product.create.js";
 import { createSoldProductController } from "./soldProduct/c/soldProduct.create.js";
 import { deleteSoldProductController } from "./soldProduct/d/soldProduct.delete.js";
 import { getSoldProductsController } from "./soldProduct/r/soldProduct.read.js";
+import { updateOwnerPropertiesController } from "./owner/u/updateOwnerProperties.update.js";
+import { updateOwnerController } from "./owner/u/updateOwner.update.js";
+import { getOwnerInfoController } from "./owner/r/getOwnerInfo.read.js";
+import { updateSoldProductController } from "./soldProduct/u/updateSoldProduct.update.js";
 
 export {
   loginController,
@@ -21,6 +25,10 @@ export {
   createPartnerController,
   createProductController,
   createSoldProductController,
+  updateSoldProductController,
   deleteSoldProductController,
-  getSoldProductsController
+  getSoldProductsController,
+  updateOwnerPropertiesController,
+  updateOwnerController,
+  getOwnerInfoController,
 };

@@ -8,9 +8,15 @@ export const BusinessType = [
 ];
 export const ReportsToModel = ["Owner", "Partner", "Employee"];
 export const CreatedByModel = ["Owner", "Partner", "Employee"];
+export const PaymentHistoryReferenceType = ["SoldProduct"];
+export const connectedWithType = ["Owner"];
 export const SoldByModel = ["Owner", "Partner", "Employee"];
 export const PremiumType = ["Regular", "Silver", "Gold"];
+export const AccountTypeEnum = ["Regular", "Premium", "OnTrial"];
 export const AdminRole = ["Owner", "Employee", "Partner"];
+export const PaymentState = ["PAID", "UNPAID", "PENDING"];
+export const UnkownPaymentType = ["CREDIT", "DEBIT"];
+export const ProductType = ["Physical", "Digital", "Subscription", "Service"]
 export const RequestForSoldProduct = [
   "ALL",
   "PAID_ALL",
@@ -99,3 +105,4 @@ export const MeasurementType = [
 
 export const AssetType = ["Depreciating", "Appreciating"];
 export const AssetStatus = ["Active", "Disposed", "Under Maintenance"];
+export const CountActionType = ["ADD", "MINUS"];

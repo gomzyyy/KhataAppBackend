@@ -1,11 +1,12 @@
 import { resType } from "../../lib/response.js";
-import { Owner, Partner, Employee } from "../../models/index.js";
+import { Owner, Partner, Employee, AccountType } from "../../models/index.js";
 import {
   encryptPassword,
   generateToken,
   verifyPassword,
 } from "../../helpers/auth.helper.js";
 import { AdminRole, BusinessType } from "../../constants/enums.js";
+import { uploadToCloudinary } from "../../service/cloud.js";
 
 export const loginController = async (req, res) => {
   try {
@@ -49,7 +50,6 @@ export const loginController = async (req, res) => {
     try {
       token = generateToken({ UID: user._id });
     } catch (error) {
-      console.log(error);
       return res.status(resType.BAD_GATEWAY.code).json({
         message: "Token generation failed",
         success: false,
@@ -88,22 +88,20 @@ export const signupController = async (req, res) => {
       businessDescription,
       businessType, //
       role,
-      equity,
       gstNumber,
-      image,
     } = req.body;
-    console.log(req.body);
     if (
       !name ||
       !email ||
       !ownerId ||
       !businessAddress ||
-      (!businessType && !BusinessType.includes(businessType)) ||
+      !businessType ||
+      !BusinessType.includes(businessType) ||
       !businessPhoneNumber ||
       !businessName ||
       !password ||
-      (!role && !AdminRole.includes(role)) ||
-      !equity
+      !role ||
+      !AdminRole.includes(role)
     ) {
       return res.status(resType.BAD_REQUEST.code).json({
         message: "Some required fields are missing",
@@ -128,11 +126,34 @@ export const signupController = async (req, res) => {
     ) {
       return res.status(resType.BAD_REQUEST.code).json({
         message:
-          "Credientials already in use:'ID', 'Business Name', 'Business Phone Number'",
+          "Credentials already in use:'ID', 'Business Name', 'Business Phone Number'",
         success: false,
       });
     }
-
+    let image;
+    if (req.file && req.file.path) {
+      try {
+        const { code, url } = await uploadToCloudinary({
+          path: req.file.path,
+          resourceType: "IMAGE",
+        });
+        if (code !== resType.OK.code || !url?.trim()) {
+          return res.status(resType.INTERNAL_SERVER_ERROR.code).json({
+            message: "Error occurred while uploading image.",
+            success: false,
+          });
+        }
+        image = url;
+      } catch (error) {
+        return res.status(resType.INTERNAL_SERVER_ERROR.code).json({
+          message:
+            error instanceof Error
+              ? error.message
+              : resType.INTERNAL_SERVER_ERROR.message,
+          success: false,
+        });
+      }
+    }
     const encryptedPassword = await encryptPassword(password);
     if (!encryptedPassword) {
       return res.status(resType.BAD_REQUEST.code).json({
@@ -140,7 +161,6 @@ export const signupController = async (req, res) => {
         success: false,
       });
     }
-
     const newOwnerData = {
       name,
       phoneNumber: phoneNumber || undefined,
@@ -154,12 +174,18 @@ export const signupController = async (req, res) => {
       businessDescription: businessDescription || undefined,
       businessType,
       role,
-      equity,
+      equity: 100,
       gstNumber,
-      image: image || undefined,
+      image,
     };
     const newBusinessOwner = new Owner(newOwnerData);
-    await newBusinessOwner.save();
+    const newAccountType = new AccountType({
+      type: "Regular",
+      connectedWithType: "Owner",
+      connectedWith: newBusinessOwner._id,
+    });
+    newBusinessOwner.accountType = newAccountType._id;
+    await Promise.all([newBusinessOwner.save(), newAccountType.save()]);
     return res.status(resType.OK.code).json({
       message: "Signup success",
       data: {

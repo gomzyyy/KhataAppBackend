@@ -5,6 +5,7 @@ import {
   Owner,
   Employee,
   Partner,
+  SoldProductPaymentHistory,
 } from "../../../models/index.js";
 import { resType } from "../../../lib/response.js";
 import mongoose from "mongoose";
@@ -28,7 +29,6 @@ export const createSoldProductController = async (req, res) => {
       !sellerId
     ) {
       await session.abortTransaction();
-      session.endSession();
       return res.status(resType.BAD_REQUEST.code).json({
         message: "Some required fields are missing.",
         success: false,
@@ -41,7 +41,6 @@ export const createSoldProductController = async (req, res) => {
       !mongoose.Types.ObjectId.isValid(sellerId)
     ) {
       await session.abortTransaction();
-      session.endSession();
       return res.status(resType.BAD_REQUEST.code).json({
         message: "Invalid Object ID for product or buyer.",
         success: false,
@@ -49,7 +48,6 @@ export const createSoldProductController = async (req, res) => {
     }
     if (buyerId === sellerId) {
       await session.abortTransaction();
-      session.endSession();
       return res.status(resType.BAD_REQUEST.code).json({
         message: "A seller cannot buy their own product.",
         success: false,
@@ -58,16 +56,22 @@ export const createSoldProductController = async (req, res) => {
     const product = await Product.findById(productId).session(session);
     if (!product) {
       await session.abortTransaction();
-      session.endSession();
       return res.status(resType.BAD_REQUEST.code).json({
         message: "Can't find the product",
         success: false,
       });
     }
-
-    if (product.stock < count) {
+    const owner = await Owner.findById(product.businessOwner).session(session);
+    if (!owner) {
       await session.abortTransaction();
       session.endSession();
+      return res.status(resType.BAD_REQUEST.code).json({
+        message: "Can't find the product owner",
+        success: false,
+      });
+    }
+    if (product.stock < count) {
+      await session.abortTransaction();
       return res.status(resType.UNPROCESSABLE_ENTITY.code).json({
         message: "Insufficient stocks.",
         success: false,
@@ -93,8 +97,6 @@ export const createSoldProductController = async (req, res) => {
         alreadySold.save({ session }),
       ]);
       await session.commitTransaction();
-      session.endSession();
-
       return res.status(resType.OK.code).json({
         message: "Product sold successfully!",
         data: { soldProduct: alreadySold },
@@ -117,7 +119,6 @@ export const createSoldProductController = async (req, res) => {
     }
     if (!seller) {
       await session.abortTransaction();
-      session.endSession();
       return res.status(resType.UNAUTHORIZED.code).json({
         message: "You are unauthorised for selling products.",
         success: false,
@@ -126,7 +127,6 @@ export const createSoldProductController = async (req, res) => {
     const buyer = await Customer.findById(buyerId).session(session);
     if (!buyer) {
       await session.abortTransaction();
-      session.endSession();
       return res.status(resType.NOT_FOUND.code).json({
         message: "Buyer not found.",
         success: false,
@@ -137,22 +137,36 @@ export const createSoldProductController = async (req, res) => {
       buyer: buyer._id,
       soldBy: seller._id,
       soldByModel: role,
-      count,
+      count: product.quantity * count,
     });
-
+    const newSoldProductHistory = new SoldProductPaymentHistory({
+      referenceType: "SoldProduct",
+      referenceId: newSoldProduct._id,
+      paymentDescription: `Product ${product.name}, was sold by ${
+        seller.name
+      } as ${seller.role} of our business, on ${new Date().toDateString()}`,
+    });
+    const newPaymentHistory = {
+      paymentId: newSoldProductHistory._id,
+      paymentType: "SoldProductPaymentHistory",
+      createdAt: new Date(Date.now()),
+      createdBy: seller._id,
+      createdByModel: role,
+    };
+    owner.history.payments.push(newPaymentHistory);
     buyer.buyedProducts.push(newSoldProduct._id);
     product.stock -= count;
     product.totalSold += count;
 
     await Promise.all([
+      newSoldProductHistory.save({ session }),
+      owner.save({ session }),
       product.save({ session }),
       newSoldProduct.save({ session }),
       buyer.save({ session }),
     ]);
 
     await session.commitTransaction();
-    session.endSession();
-
     return res.status(resType.OK.code).json({
       message: "Product sold successfully!",
       data: { soldProduct: newSoldProduct },
@@ -160,7 +174,7 @@ export const createSoldProductController = async (req, res) => {
     });
   } catch (error) {
     await session.abortTransaction();
-    session.endSession();
+
     return res.status(resType.INTERNAL_SERVER_ERROR.code).json({
       message: `Error occurred!: ${
         error instanceof Error
@@ -169,5 +183,7 @@ export const createSoldProductController = async (req, res) => {
       }`,
       success: false,
     });
+  } finally {
+    session.endSession();
   }
 };

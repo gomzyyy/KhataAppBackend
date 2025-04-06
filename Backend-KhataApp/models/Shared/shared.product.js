@@ -1,4 +1,8 @@
-import { CreatedByModel, MeasurementType } from "../../constants/enums.js";
+import {
+  CreatedByModel,
+  MeasurementType,
+  ProductType,
+} from "../../constants/enums.js";
 import { Schema } from "mongoose";
 
 export const sharedProduct = {
@@ -9,6 +13,12 @@ export const sharedProduct = {
   businessOwner: {
     type: Schema.Types.ObjectId,
     ref: "Owner",
+    required: true,
+  },
+  productType: {
+    type: String,
+    enum: [...ProductType],
+    required: true,
   },
   image: {
     type: String,

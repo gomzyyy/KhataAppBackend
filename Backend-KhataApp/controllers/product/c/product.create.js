@@ -1,11 +1,15 @@
 import { Employee, Owner, Partner, Product } from "../../../models/index.js";
-import { CreatedByModel, MeasurementType } from "../../../constants/enums.js";
+import {
+  CreatedByModel,
+  MeasurementType,
+  ProductType,
+} from "../../../constants/enums.js";
 import { resType } from "../../../lib/response.js";
 import mongoose from "mongoose";
 
 export const createProductController = async (req, res) => {
   try {
-    const { creatorId, role } = req.query;
+    const { creatorId, role, ownerId } = req.query;
     const {
       name,
       image,
@@ -16,6 +20,7 @@ export const createProductController = async (req, res) => {
       measurementTypeDescription,
       stock,
       productCost,
+      productType,
     } = req.body;
 
     if (
@@ -28,8 +33,11 @@ export const createProductController = async (req, res) => {
       !stock ||
       !productCost ||
       !creatorId ||
+      !ownerId ||
       !role ||
-      !CreatedByModel.includes(role)
+      !CreatedByModel.includes(role) ||
+      !productType ||
+      !ProductType.includes(productType)
     ) {
       return res.status(resType.BAD_REQUEST.code).json({
         message: "Some required fields are missing.",
@@ -37,13 +45,24 @@ export const createProductController = async (req, res) => {
       });
     }
 
-    if (!mongoose.Types.ObjectId.isValid(creatorId)) {
+    if (
+      !mongoose.Types.ObjectId.isValid(creatorId) ||
+      !mongoose.Types.ObjectId.isValid(ownerId)
+    ) {
       return res.status(resType.BAD_REQUEST.code).json({
         message: "Invalid creator Object ID.",
         success: false,
       });
     }
 
+    const owner = await Owner.findById(ownerId);
+
+    if (!owner) {
+      return res.status(resType.NOT_FOUND.code).json({
+        message: "Cannot find the owner.",
+        success: false,
+      });
+    }
     const existingProduct = await Product.findOne({
       name,
       createdBy: creatorId,
@@ -81,6 +100,7 @@ export const createProductController = async (req, res) => {
       name,
       image: image || undefined,
       totalSold: 0,
+      businessOwner: owner._id,
       basePrice,
       discountedPrice: discountedPrice || undefined,
       quantity,
@@ -90,10 +110,13 @@ export const createProductController = async (req, res) => {
       productCost,
       createdBy: creator._id,
       createdByModel: role,
+      productType: productType || "Physical",
     };
 
     const newProduct = new Product(newProductData);
-    await newProduct.save();
+    owner.inventory.push(newProduct._id);
+
+    await Promise.all([newProduct.save(), owner.save()]);
 
     return res.status(resType.OK.code).json({
       message: "Product created successfully!",
