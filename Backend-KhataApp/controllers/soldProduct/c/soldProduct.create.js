@@ -155,8 +155,8 @@ export const createSoldProductController = async (req, res) => {
     };
     owner.history.payments.push(newPaymentHistory);
     buyer.buyedProducts.push(newSoldProduct._id);
-    product.stock -= count;
-    product.totalSold += count;
+    product.stock -= count * product.quantity;
+    product.totalSold += count * product.quantity;
 
     await Promise.all([
       newSoldProductHistory.save({ session }),
