@@ -9,6 +9,8 @@ import SoldProduct from "./Product/SoldProduct.js";
 import AccountType from "./AccountType/AccountType.js";
 import SoldProductPaymentHistory from "./History/PaymentHistory/SoldProductPaymentHistory.js";
 import UnknownPaymentHistory from "./History/PaymentHistory/UnknownPaymentHistory.js";
+import Otp from "./OTP/OTPModel.js";
+
 export {
   Owner,
   Employee,
@@ -21,4 +23,5 @@ export {
   AccountType,
   SoldProductPaymentHistory,
   UnknownPaymentHistory,
+  Otp,
 };

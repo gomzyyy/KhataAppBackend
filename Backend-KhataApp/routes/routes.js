@@ -13,7 +13,8 @@ import {
   updateOwnerPropertiesController,
   updateOwnerController,
   getOwnerInfoController,
-  updateSoldProductController
+  updateSoldProductController,
+  requestOtpController
 } from "../controllers/index.js";
 import { uploadImage } from "../middlewares/index.js";
 import { auth } from "../middlewares/index.js";
@@ -31,6 +32,7 @@ routes.post("/create/customer", createCustomerController); //
 routes.post("/create/partner", createPartnerController); //
 routes.post("/create/product", createProductController); //
 routes.post("/sell/product", createSoldProductController); //
+routes.post("/request/otp",requestOtpController) //
 
 //delete
 routes.post("/delete/sold-product", deleteSoldProductController); //

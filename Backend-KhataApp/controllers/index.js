@@ -13,6 +13,8 @@ import { updateOwnerPropertiesController } from "./owner/u/updateOwnerProperties
 import { updateOwnerController } from "./owner/u/updateOwner.update.js";
 import { getOwnerInfoController } from "./owner/r/getOwnerInfo.read.js";
 import { updateSoldProductController } from "./soldProduct/u/updateSoldProduct.update.js";
+import { requestOtpController, verifyEmailController } from "./auth/verifyEmail.js";
+
 
 export {
   loginController,
@@ -31,4 +33,6 @@ export {
   updateOwnerPropertiesController,
   updateOwnerController,
   getOwnerInfoController,
+  requestOtpController,
+  verifyEmailController
 };

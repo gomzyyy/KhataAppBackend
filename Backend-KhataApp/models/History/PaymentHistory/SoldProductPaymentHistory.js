@@ -11,10 +11,20 @@ const soldProductPaymentHistorySchema = new Schema(
       enum: [...PaymentHistoryReferenceType],
       required: true,
     },
-    referenceId: {
+    reference: {
       type: Schema.Types.ObjectId,
       refPath: "referenceType",
       required: true,
+    },
+    info: {
+      name: {
+        type: String,
+        required: true,
+      },
+      amount: {
+        type: String,
+        required: true,
+      },
     },
     paymentDescription: {
       type: String,

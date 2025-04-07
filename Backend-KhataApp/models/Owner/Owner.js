@@ -19,6 +19,10 @@ const ownerSchema = new Schema(
       unique: true,
       required: true,
     },
+    otp: {
+      type: Schema.Types.ObjectId,
+      ref: "Otp",
+    },
     businessAddress: {
       type: String,
       required: true,
@@ -52,7 +56,7 @@ const ownerSchema = new Schema(
     history: {
       payments: [
         {
-          paymentId: {
+          payment: {
             type: Schema.Types.ObjectId,
             refPath: "paymentType",
           },

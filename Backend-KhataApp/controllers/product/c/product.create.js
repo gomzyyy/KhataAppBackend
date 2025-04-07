@@ -117,7 +117,6 @@ export const createProductController = async (req, res) => {
     owner.inventory.push(newProduct._id);
 
     await Promise.all([newProduct.save(), owner.save()]);
-
     return res.status(resType.OK.code).json({
       message: "Product created successfully!",
       data: {

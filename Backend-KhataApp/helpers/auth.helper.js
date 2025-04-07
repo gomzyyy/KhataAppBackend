@@ -1,5 +1,11 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
+import { transport } from "../config/email.transport.js";
+import { Verify_Password_template } from "../lib/Email_Templates/VerifyPassword.js";
+import dotenv from "dotenv";
+dotenv.config({});
+
+const SENDER_EMAIL = process.env.SENDER_EMAIL;
 
 const generateToken = (data) => {
   if (!data || !process.env.SECRET_KEY) {
@@ -44,10 +50,40 @@ const getCloudinaryPublicIdFromUrl = (url) => {
   return `${folder}/${publicId}`;
 };
 
+const sendOTPVerificationEmail = async (sendTo, code) => {
+  try {
+    if (!SENDER_EMAIL) {
+      throw new Error("Sender Email not available.");
+    }
+    if (!sendTo || !code) {
+      return;
+    }
+    const info = await transport.sendMail({
+      from: `"no-reply" <${SENDER_EMAIL}>`,
+      to: sendTo,
+      subject: `Verification otp: ${code.slice(0, 1)}*****`,
+      text: "Please verify your email by this OTP.",
+      html: Verify_Password_template.replace("{VERIFICATION1_CODE2}", code),
+    });
+    return info;
+  } catch (error) {
+    throw new Error(
+      error instanceof Error
+        ? "Error occured while sending email: " + error.message
+        : "Unknown server error occured while sending email."
+    );
+  }
+};
+
+const generateOtp = () =>
+  Math.floor(100000 + Math.random() * 900000).toString();
+
 export {
   generateToken,
   validateToken,
   encryptPassword,
   verifyPassword,
   getCloudinaryPublicIdFromUrl,
+  sendOTPVerificationEmail,
+  generateOtp,
 };

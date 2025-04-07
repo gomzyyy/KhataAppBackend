@@ -89,9 +89,19 @@ export const createSoldProductController = async (req, res) => {
       createdAt: { $gte: startOfDay, $lt: endOfDay },
     });
     if (alreadySold) {
+      const existingHistory = await SoldProductPaymentHistory.findOne({
+        reference: alreadySold._id,
+      });
+
       alreadySold.count += count;
       product.stock -= count;
       product.totalSold += count;
+      if (existingHistory) {
+        existingHistory.info.amount = alreadySold.discountedPrice
+          ? product.discountedPrice * alreadySold.count
+          : product.basePrice * alreadySold.count;
+        await existingHistory.save();
+      }
       await Promise.all([
         product.save({ session }),
         alreadySold.save({ session }),
@@ -141,13 +151,19 @@ export const createSoldProductController = async (req, res) => {
     });
     const newSoldProductHistory = new SoldProductPaymentHistory({
       referenceType: "SoldProduct",
-      referenceId: newSoldProduct._id,
+      reference: newSoldProduct._id,
+      info: {
+        name: product.name,
+        amount: product.discountedPrice
+          ? product.discountedPrice * newSoldProduct.count
+          : product.basePrice * newSoldProduct.count,
+      },
       paymentDescription: `Product ${product.name}, was sold by ${
         seller.name
       } as ${seller.role} of our business, on ${new Date().toDateString()}`,
     });
     const newPaymentHistory = {
-      paymentId: newSoldProductHistory._id,
+      payment: newSoldProductHistory._id,
       paymentType: "SoldProductPaymentHistory",
       createdAt: new Date(Date.now()),
       createdBy: seller._id,
