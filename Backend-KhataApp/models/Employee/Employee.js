@@ -13,9 +13,6 @@ import {
 const employeeSchema = new Schema(
   {
     ...sharedUser,
-    employeeId: {
-      type: String,
-    },
     businessOwner: {
       type: Schema.Types.ObjectId,
       ref: "Owner",
@@ -38,9 +35,6 @@ const employeeSchema = new Schema(
     departmentDescription: { type: String },
     position: { type: String, enum: [...Position], required: true },
     positionDescription: { type: String },
-    email: {
-      type: String,
-    },
     hireDate: {
       type: Date,
       required: true,

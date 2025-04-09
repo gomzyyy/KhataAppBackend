@@ -100,8 +100,19 @@ export const MeasurementType = [
   "Pcs",
   "Pack",
   "Dozen",
+  "Meter",
+  "Centimeter",
+  "Inch",
+  "Foot",
+  "Square Meter",
+  "Cubic Meter",
+  "Box",
+  "Gallon",
+  "Ounce",
+  "Pound",
   "Other",
 ];
+
 
 export const AssetType = ["Depreciating", "Appreciating"];
 export const AssetStatus = ["Active", "Disposed", "Under Maintenance"];

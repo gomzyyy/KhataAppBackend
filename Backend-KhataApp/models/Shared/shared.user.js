@@ -16,4 +16,9 @@ export const sharedUser = {
   image: {
     type: String,
   },
+  userId: {
+    type: String,
+    unique: true,
+    required: true,
+  },
 };

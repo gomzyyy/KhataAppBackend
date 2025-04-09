@@ -53,14 +53,4 @@ export const sharedProduct = {
     type: Number,
     required: true,
   },
-  createdBy: {
-    type: Schema.Types.ObjectId,
-    refPath: "createdByModel",
-    required: true,
-  },
-  createdByModel: {
-    type: String,
-    required: true,
-    enum: [...CreatedByModel],
-  },
 };

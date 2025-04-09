@@ -13,7 +13,12 @@ import { updateOwnerPropertiesController } from "./owner/u/updateOwnerProperties
 import { updateOwnerController } from "./owner/u/updateOwner.update.js";
 import { getOwnerInfoController } from "./owner/r/getOwnerInfo.read.js";
 import { updateSoldProductController } from "./soldProduct/u/updateSoldProduct.update.js";
-import { requestOtpController, verifyEmailController } from "./auth/verifyEmail.js";
+import {
+  requestOtpController,
+  verifyEmailController,
+} from "./auth/verifyEmail.js";
+import { findByIdController } from "./auth/r/findById.read.js";
+import { validateTokenController } from "./auth/validateToken.js";
 
 
 export {
@@ -34,5 +39,7 @@ export {
   updateOwnerController,
   getOwnerInfoController,
   requestOtpController,
-  verifyEmailController
+  verifyEmailController,
+  findByIdController,
+  validateTokenController
 };

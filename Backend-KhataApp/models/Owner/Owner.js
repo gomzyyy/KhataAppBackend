@@ -14,11 +14,6 @@ const ownerSchema = new Schema(
       type: String,
       required: true,
     },
-    ownerId: {
-      type: String,
-      unique: true,
-      required: true,
-    },
     otp: {
       type: Schema.Types.ObjectId,
       ref: "Otp",
@@ -110,7 +105,7 @@ const ownerSchema = new Schema(
       enum: [...BusinessType],
       required: true,
     },
-    EmployeeData: [
+    employeeData: [
       {
         type: Schema.Types.ObjectId,
         ref: "Employee",

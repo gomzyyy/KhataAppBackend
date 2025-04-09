@@ -53,12 +53,12 @@ export const updateSoldProductController = async (req, res) => {
       user = await Owner.findById(uid);
     } else if (role === "Partner") {
       user = await Partner.findOne({
-        partnerId: uid,
+        userId: uid,
         "permissions.soldProduct.update": true,
       });
     } else if (role === "Employee") {
       user = await Employee.findOne({
-        employeeId: uid,
+        userId: uid,
         "permissions.soldProduct.update": true,
       });
     } else {

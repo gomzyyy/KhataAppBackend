@@ -1,16 +1,17 @@
-import { Owner } from "../../models.js";
+import { Owner } from "../../../models/index.js";
 import resType from "../../../lib/response.js";
+import mongoose from "mongoose";
 
 export const getEmployeeListController = async (req, res) => {
   try {
     const { oid } = req.query; //oid === ownerId #Owner
-    if (!oid) {
+    if (!oid || !mongoose.Types.ObjectId.isValid(oid)) {
       return res.status(resType.BAD_REQUEST.code).json({
         message: resType.BAD_REQUEST.message,
         success: false,
       });
     }
-    const owner = await Owner.findOne({ ownerId: oid })
+    const owner = await Owner.findById(oid)
       .populate({ path: "EmployeeData", match: { status: "Active" } })
       .select("-password");
     if (!owner) {

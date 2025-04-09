@@ -22,11 +22,11 @@ export const loginController = async (req, res) => {
     let user;
 
     if (role === "Owner") {
-      user = await Owner.findOne({ ownerId: userId });
+      user = await Owner.findOne({ userId });
     } else if (role === "Partner") {
-      user = await Partner.findOne({ partnerId: userId });
+      user = await Partner.findOne({ userId });
     } else if (role === "Employee") {
-      user = await Employee.findOne({ employeeId: userId });
+      user = await Employee.findOne({ userId });
     } else {
       return res.status(resType.BAD_REQUEST.code).json({
         message: resType.BAD_REQUEST.message,
@@ -81,7 +81,7 @@ export const signupController = async (req, res) => {
       password, //
       email, //
       address,
-      ownerId, //
+      userId, //
       businessAddress, //
       businessName, //
       businessPhoneNumber, //
@@ -93,7 +93,7 @@ export const signupController = async (req, res) => {
     if (
       !name ||
       !email ||
-      !ownerId ||
+      !userId ||
       !businessAddress ||
       !businessType ||
       !BusinessType.includes(businessType) ||
@@ -113,7 +113,7 @@ export const signupController = async (req, res) => {
       existingOwnerByBusinessName,
       existingOwnerByPhoneNumber,
     ] = await Promise.all([
-      Owner.findOne({ ownerId }),
+      Owner.findOne({ userId }),
       Owner.findOne({ businessName }),
       Owner.findOne({ businessPhoneNumber }),
     ]);
@@ -166,7 +166,7 @@ export const signupController = async (req, res) => {
       phoneNumber: phoneNumber || undefined,
       email,
       address: address || undefined,
-      ownerId,
+      userId,
       password: encryptedPassword,
       businessAddress,
       businessName,

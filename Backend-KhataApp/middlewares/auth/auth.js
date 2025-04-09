@@ -44,11 +44,11 @@ export const auth = async (req, res, next) => {
     }
     let user;
     if (role === "Owner") {
-      user = await Owner.findOne({ ownerId: UID });
+      user = await Owner.findById(UID);
     } else if (role === "Partner") {
-      user = await Partner.findOne({ partnerId: UID });
+      user = await Partner.findById(UID);
     } else if (role === "Employee") {
-      user = await Employee.findOne({ employeeId: UID });
+      user = await Employee.findById(UID);
     }
     if (!user) {
       return res.status(r.NOT_FOUND.code).json({

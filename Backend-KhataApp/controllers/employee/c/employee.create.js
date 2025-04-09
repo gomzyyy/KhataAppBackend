@@ -105,7 +105,7 @@ export const createEmployeeController = async (req, res) => {
       });
     }
 
-    const isExisting = await Employee.findOne({ employeeId });
+    const isExisting = await Employee.findOne({ userId });
     if (isExisting) {
       return res.status(resType.CONFLICT.code).json({
         message: "Employee exists with the given ID.",
@@ -117,7 +117,7 @@ export const createEmployeeController = async (req, res) => {
 
     let hr;
     if (hrUid) {
-      hr = await Employee.findOne({ employeeId: hrUid, department: "HR" });
+      hr = await Employee.findOne({ userId: hrUid, department: "HR" });
     }
     if (reportsToModel === "Employee" && !hr) {
       return res.status(resType.NOT_FOUND.code).json({
@@ -142,7 +142,7 @@ export const createEmployeeController = async (req, res) => {
 
     const newEmployeeData = {
       name,
-      employeeId,
+      userId:employeeId,
       phoneNumber: phoneNumber || undefined,
       password: encryptedPassword,
       position,

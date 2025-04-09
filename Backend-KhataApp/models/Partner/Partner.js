@@ -17,11 +17,11 @@ const partnerSchema = new Schema(
       type: Number,
       required: true,
     },
-    partnerId: {
-      type: String,
-      unique: true,
-      required: true,
-    },
+    // partnerId: {
+    //   type: String,
+    //   unique: true,
+    //   required: true,
+    // },
     role: {
       type: String,
       enum: [...AdminRole],

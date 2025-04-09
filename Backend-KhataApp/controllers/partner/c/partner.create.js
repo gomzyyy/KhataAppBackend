@@ -44,7 +44,7 @@ export const createPartnerController = async (req, res) => {
     }
 
     const existingPartner = await Partner.findOne({
-      $or: [{ partnerId }, { email }, { phoneNumber }],
+      $or: [{ userId }, { email }, { phoneNumber }],
     });
     if (existingPartner) {
       return res.status(resType.CONFLICT.code).json({
@@ -114,7 +114,7 @@ export const createPartnerController = async (req, res) => {
       address,
       businessOwner: owner._id,
       equity,
-      partnerId,
+      userId: partnerId,
     };
 
     const newPartner = new Partner(newPartnerData);
