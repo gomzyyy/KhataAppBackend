@@ -142,14 +142,20 @@ export const createEmployeeController = async (req, res) => {
 
     const newEmployeeData = {
       name,
-      userId:employeeId,
-      phoneNumber: phoneNumber || undefined,
+      userId: employeeId,
+      phoneNumber: {
+        value: phoneNumber || undefined,
+        verified: false,
+      },
       password: encryptedPassword,
       position,
       positionDescription: positionDescription || undefined,
       role,
       image: image || undefined,
-      email,
+      email: {
+        value: email,
+        verified: false,
+      },
       address,
       gender,
       department,

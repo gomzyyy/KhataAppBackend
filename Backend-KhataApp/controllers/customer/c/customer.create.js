@@ -2,14 +2,14 @@ import { CreatedByModel } from "../../../constants/enums.js";
 import { Customer, Employee, Owner, Partner } from "../../../models/index.js";
 import { resType } from "../../../lib/response.js";
 import mongoose from "mongoose";
+import { uploadToCloudinary } from "../../../service/cloud.js";
 
 export const createCustomerController = async (req, res) => {
   try {
     const { creatorId, createdBy } = req.query;
-    const { name, address, businessOwnerId, phoneNumber, image, email } =
-      req.body;
+    const { name, address, businessOwnerId, phoneNumber, email } = req.body;
 
-    if (!name || !address || !businessOwnerId) {
+    if (!name || !businessOwnerId) {
       return res.status(resType.BAD_REQUEST.code).json({
         message: "Some required fields are missing",
         success: false,
@@ -81,19 +81,32 @@ export const createCustomerController = async (req, res) => {
         success: false,
       });
     }
+    let imageUrl;
+
+    if (req.file && req.file.path) {
+      const { code, url } = await uploadToCloudinary({
+        path: req.file.path,
+        resourceType: "IMAGE",
+      });
+      if (code === resType.OK.code) {
+        imageUrl = url;
+      }
+    }
     const newCustomerObj = {
       name,
       phoneNumber: phoneNumber || undefined,
-      image: image || undefined,
+      image: imageUrl || undefined,
       email: email || undefined,
       businessOwner: foundBusinessOwner._id,
       unpaidPayments: [],
       paidPayments: [],
       createdBy: creator._id,
       createdByModel: createdBy,
+      address,
     };
     const newCustomer = new Customer(newCustomerObj);
-    await newCustomer.save();
+    foundBusinessOwner.customers.push(newCustomer._id);
+    await Promise.all([newCustomer.save(), foundBusinessOwner.save()]);
     return res.status(resType.OK.code).json({
       message: "Customer created successfully!",
       data: {

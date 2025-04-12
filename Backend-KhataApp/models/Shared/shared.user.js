@@ -4,11 +4,23 @@ export const sharedUser = {
     required: true,
   },
   phoneNumber: {
-    type: String,
+    value: {
+      type: String,
+    },
+    verified: {
+      type: Boolean,
+      default: false,
+    },
   },
   email: {
-    type: String,
-    required: true,
+    value: {
+      type: String,
+      required: true,
+    },
+    verified: {
+      type: Boolean,
+      default: false,
+    },
   },
   address: {
     type: String,

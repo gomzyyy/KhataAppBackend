@@ -5,13 +5,18 @@ import mongoose from "mongoose";
 export const getOwnerInfoController = async (req, res) => {
   try {
     const { role, ownerId } = req.query;
-    if (!role || !ownerId) {
+    const uid = req.uid;
+    if (!role || !ownerId || !uid) {
       return res.status(resType.BAD_REQUEST.code).json({
         message: "Some required queries are missing",
         success: false,
       });
     }
-    if (role !== "Owner" || !mongoose.Types.ObjectId.isValid(ownerId)) {
+    if (
+      role !== "Owner" ||
+      !mongoose.Types.ObjectId.isValid(ownerId) ||
+      !mongoose.Types.ObjectId.isValid(uid)
+    ) {
       return res.status(resType.UNAUTHORIZED.code).json({
         message: "You're not authorised of this action",
         success: false,

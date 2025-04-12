@@ -99,7 +99,10 @@ export const updateOwnerController = async (req, res) => {
       image = result.url;
     }
     if (name) owner.name = name;
-    if (email) owner.email = email;
+    if (email) {
+      owner.email.value = email;
+      owner.email.verified = false;
+    }
     if (ownerId) owner.ownerId = ownerId;
     if (address) owner.address = address;
     if (phoneNumber) owner.phoneNumber = phoneNumber;

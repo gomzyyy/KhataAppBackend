@@ -6,13 +6,13 @@ import {
 } from "../../../constants/enums.js";
 import { resType } from "../../../lib/response.js";
 import mongoose from "mongoose";
+import { uploadToCloudinary } from "../../../service/cloud.js";
 
 export const createProductController = async (req, res) => {
   try {
     const { creatorId, role, ownerId } = req.query;
     const {
       name,
-      image,
       basePrice,
       discountedPrice,
       quantity,
@@ -22,6 +22,9 @@ export const createProductController = async (req, res) => {
       productCost,
       productType,
     } = req.body;
+    console.log("REQ.BODY =>", req.body);
+    console.log("REQ.FILE =>", req.file);
+    console.log("REQ.QUERY =>", req.query);
 
     if (
       !name ||
@@ -31,7 +34,6 @@ export const createProductController = async (req, res) => {
       !MeasurementType.includes(measurementType) ||
       (measurementType === "Other" && !measurementTypeDescription) ||
       !stock ||
-      !productCost ||
       !creatorId ||
       !ownerId ||
       !role ||
@@ -39,6 +41,17 @@ export const createProductController = async (req, res) => {
       !productType ||
       !ProductType.includes(productType)
     ) {
+      console.log(
+        name,
+        basePrice,
+        quantity,
+        measurementType,
+        stock,
+        creatorId,
+        ownerId,
+        role,
+        productType
+      );
       return res.status(resType.BAD_REQUEST.code).json({
         message: "Some required fields are missing.",
         success: false,
@@ -95,10 +108,36 @@ export const createProductController = async (req, res) => {
         success: false,
       });
     }
+    let imageUrl;
+    if (req.file && req.file.path) {
+      try {
+        const { code, url } = await uploadToCloudinary({
+          path: req.file.path,
+          resourceType: "IMAGE",
+        });
+        if (code === resType.OK.code && url) {
+          imageUrl = url;
+        } else {
+          return res.status(resType.INTERNAL_SERVER_ERROR.code).json({
+            message: `Error occurred while uploading image.`,
+            success: false,
+          });
+        }
+      } catch (error) {
+        return res.status(resType.INTERNAL_SERVER_ERROR.code).json({
+          message: `Error occurred!: ${
+            error instanceof Error
+              ? error.message
+              : resType.INTERNAL_SERVER_ERROR.message
+          }`,
+          success: false,
+        });
+      }
+    }
 
     const newProductData = {
       name,
-      image: image || undefined,
+      image: imageUrl || undefined,
       totalSold: 0,
       businessOwner: owner._id,
       basePrice,
@@ -107,7 +146,7 @@ export const createProductController = async (req, res) => {
       measurementType: measurementType || undefined,
       measurementTypeDescription: measurementTypeDescription || undefined,
       stock,
-      productCost,
+      productCost: productCost || 0,
       createdBy: creator._id,
       createdByModel: role,
       productType: productType || "Physical",

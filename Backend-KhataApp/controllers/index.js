@@ -1,4 +1,8 @@
-import { loginController, signupController } from "./auth/auth.js";
+import {
+  getUpdatedUser,
+  loginController,
+  signupController,
+} from "./auth/auth.js";
 import { updateCustomerProfilePhoto } from "./customer/u/updateCustomerProfilePhoto.js";
 import { updateEmployeeProfilePhoto } from "./employee/u/updateEmployeeProfilePhoto.js";
 import { updateOwnerProfilePhoto } from "./owner/u/updateOwnerProfilePhoto.js";
@@ -20,7 +24,6 @@ import {
 import { findByIdController } from "./auth/r/findById.read.js";
 import { validateTokenController } from "./auth/validateToken.js";
 
-
 export {
   loginController,
   signupController,
@@ -41,5 +44,6 @@ export {
   requestOtpController,
   verifyEmailController,
   findByIdController,
-  validateTokenController
+  validateTokenController,
+  getUpdatedUser,
 };

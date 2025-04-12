@@ -107,10 +107,16 @@ export const createPartnerController = async (req, res) => {
     const newPartnerData = {
       name,
       image: image || undefined,
-      phoneNumber,
+      phoneNumber: {
+        value: phoneNumber,
+        verified: false,
+      },
       password: encryptedPassword,
       role,
-      email,
+      email: {
+        value: email,
+        verified: false,
+      },
       address,
       businessOwner: owner._id,
       equity,

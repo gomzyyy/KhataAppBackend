@@ -56,7 +56,7 @@ export const auth = async (req, res, next) => {
         success: false,
       });
     }
-    if(!mongoose.Types.ObjectId.isValid(user._id)){
+    if (!mongoose.Types.ObjectId.isValid(user._id)) {
       return res.status(r.BAD_REQUEST.code).json({
         message: "invalid Object ID. error at mw:auth.js",
         success: false,
@@ -65,6 +65,7 @@ export const auth = async (req, res, next) => {
     req.uid = user._id;
     next();
   } catch (error) {
+    console.log(error);
     return res.status(r.INTERNAL_SERVER_ERROR.code).json({
       message:
         error instanceof Error

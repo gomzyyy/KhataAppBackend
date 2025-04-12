@@ -4,7 +4,6 @@ import { AdminRole } from "../../../constants/enums.js";
 
 export const findByIdController = async (req, res) => {
   try {
-    console.log("vorro")
     const { userId, role } = req.query;
     if (!userId || !role) {
       return res.status(resType.BAD_REQUEST.code).json({

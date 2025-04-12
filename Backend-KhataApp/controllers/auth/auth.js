@@ -7,6 +7,7 @@ import {
 } from "../../helpers/auth.helper.js";
 import { AdminRole, BusinessType } from "../../constants/enums.js";
 import { uploadToCloudinary } from "../../service/cloud.js";
+import mongoose from "mongoose";
 
 export const loginController = async (req, res) => {
   try {
@@ -22,11 +23,23 @@ export const loginController = async (req, res) => {
     let user;
 
     if (role === "Owner") {
-      user = await Owner.findOne({ userId });
+      user = await Owner.findOne({ userId }).populate([
+        "customers",
+        "employeeData",
+        "inventory",
+      ]);
     } else if (role === "Partner") {
-      user = await Partner.findOne({ userId });
+      user = await Partner.findOne({ userId }).populate({
+        path: "businessOwner",
+        select: "-password -accessPasscode",
+        populate: { path: ["customers", "employeeData", "inventory"] },
+      });
     } else if (role === "Employee") {
-      user = await Employee.findOne({ userId });
+      user = await Employee.findOne({ userId }).populate({
+        path: "businessOwner",
+        select: "-password -accessPasscode",
+        populate: { path: ["customers", "employeeData", "inventory"] },
+      });
     } else {
       return res.status(resType.BAD_REQUEST.code).json({
         message: resType.BAD_REQUEST.message,
@@ -53,6 +66,16 @@ export const loginController = async (req, res) => {
       return res.status(resType.BAD_GATEWAY.code).json({
         message: "Token generation failed",
         success: false,
+      });
+    }
+    if (!token) {
+      return res.status(resType.INTERNAL_SERVER_ERROR.code).json({
+        message: "Token generation error.",
+        data: {
+          user: undefined,
+          token: undefined,
+        },
+        success: true,
       });
     }
     return res.status(resType.OK.code).json({
@@ -90,12 +113,13 @@ export const signupController = async (req, res) => {
       role,
       gstNumber,
     } = req.body;
+    console.log(req.body);
     if (
-      !name ||
-      !email ||
-      !userId ||
-      !businessAddress ||
-      !businessType ||
+      !name || //
+      !email || //
+      !userId || //
+      !businessAddress || //
+      !businessType || //
       !BusinessType.includes(businessType) ||
       !businessPhoneNumber ||
       !businessName ||
@@ -115,7 +139,7 @@ export const signupController = async (req, res) => {
     ] = await Promise.all([
       Owner.findOne({ userId }),
       Owner.findOne({ businessName }),
-      Owner.findOne({ businessPhoneNumber }),
+      Owner.findOne({ "businessPhoneNumber.value": businessPhoneNumber }),
     ]);
 
     if (
@@ -163,14 +187,22 @@ export const signupController = async (req, res) => {
     }
     const newOwnerData = {
       name,
-      phoneNumber: phoneNumber || undefined,
-      email,
+      phoneNumber: {
+        value: phoneNumber || undefined,
+        verified: false,
+      },
+      email: {
+        value: email,
+        verified: false,
+      },
       address: address || undefined,
       userId,
       password: encryptedPassword,
       businessAddress,
       businessName,
-      businessPhoneNumber,
+      businessPhoneNumber: {
+        value: businessPhoneNumber,
+      },
       businessDescription: businessDescription || undefined,
       businessType,
       role,
@@ -185,11 +217,32 @@ export const signupController = async (req, res) => {
       connectedWith: newBusinessOwner._id,
     });
     newBusinessOwner.accountType = newAccountType._id;
+    let token;
+    try {
+      token = generateToken({ UID: newBusinessOwner._id });
+    } catch (error) {
+      return res.status(resType.BAD_GATEWAY.code).json({
+        message: "Token generation failed",
+        success: false,
+      });
+    }
+    if (!token) {
+      return res.status(resType.INTERNAL_SERVER_ERROR.code).json({
+        message: "Token generation error.",
+        data: {
+          user: undefined,
+          token: undefined,
+        },
+        success: true,
+      });
+    }
     await Promise.all([newBusinessOwner.save(), newAccountType.save()]);
+
     return res.status(resType.OK.code).json({
       message: "Signup success",
       data: {
         user: newBusinessOwner,
+        token,
       },
       success: true,
     });
@@ -200,6 +253,79 @@ export const signupController = async (req, res) => {
           ? error.message
           : resType.INTERNAL_SERVER_ERROR.message
       }`,
+      success: false,
+    });
+  }
+};
+
+export const getUpdatedUser = async (req, res) => {
+  try {
+    const { role } = req.query;
+    const uid = req.uid;
+    if (!role || !AdminRole.includes(role)) {
+      return res.status(resType.BAD_REQUEST.code).json({
+        message: resType.BAD_REQUEST.message,
+        success: false,
+      });
+    }
+    if (!mongoose.Types.ObjectId.isValid(uid)) {
+      return res.status(resType.BAD_REQUEST.code).json({
+        message: "Invalid Object Id.",
+        data: {
+          user: undefined,
+        },
+        success: false,
+      });
+    }
+    let user;
+
+    if (role === "Owner") {
+      user = await Owner.findById(uid).populate([
+        {
+          path: "customers",
+          populate: {
+            path: "buyedProducts",
+            populate: { path: ["product", "soldBy", "buyer"] },
+          },
+        },
+        "employeeData",
+        "inventory",
+      ]);
+    } else if (role === "Partner") {
+      user = await Partner.findById(uid).populate({
+        path: "businessOwner",
+        select: "-password -accessPasscode",
+        populate: { path: ["customers", "employeeData", "inventory"] },
+      });
+    } else if (role === "Employee") {
+      user = await Employee.findById(uid).populate({
+        path: "businessOwner",
+        select: "-password -accessPasscode",
+        populate: { path: ["customers", "employeeData", "inventory"] },
+      });
+    } else {
+      return res.status(resType.BAD_REQUEST.code).json({
+        message: resType.BAD_REQUEST.message,
+        success: false,
+      });
+    }
+    if (!user) {
+      return res.status(resType.NOT_FOUND.code).json({
+        message: "User not found with the given ID",
+        success: false,
+      });
+    }
+    return res.status(resType.OK.code).json({
+      message: "Login success.",
+      data: {
+        user,
+      },
+      success: true,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(resType.INTERNAL_SERVER_ERROR.code).json({
+      message: `Internal server error.`,
       success: false,
     });
   }

@@ -17,6 +17,7 @@ import {
   requestOtpController,
   findByIdController,
   validateTokenController,
+  getUpdatedUser,
 } from "../controllers/index.js";
 import { uploadImage } from "../middlewares/index.js";
 import { auth } from "../middlewares/index.js";
@@ -30,31 +31,47 @@ routes.post("/signup", signupController);
 routes.post("/validate/token", auth, validateTokenController);
 
 //create
-routes.post("/create/employee", createEmployeeController); //
-routes.post("/create/customer", createCustomerController); //
-routes.post("/create/partner", createPartnerController); //
-routes.post("/create/product", createProductController); //
-routes.post("/sell/product", createSoldProductController); //
-routes.post("/request/otp", requestOtpController); //
+routes.post("/create/employee", auth, createEmployeeController); //
+routes.post(
+  "/create/customer",
+  auth,
+  uploadImage.single("img"),
+  createCustomerController
+); //
+routes.post("/create/partner", auth, createPartnerController); //
+routes.post(
+  "/create/product",
+  auth,
+  uploadImage.single("img"),
+  createProductController
+); //
+routes.post("/sell/product", auth, createSoldProductController); //
+routes.post("/request/otp", auth, requestOtpController); //
 
 //delete
-routes.post("/delete/sold-product", deleteSoldProductController); //
+routes.post("/delete/sold-product", auth, deleteSoldProductController); //
 
 //read
 routes.get("/find/user", findByIdController); //
-routes.get("/get/sold-products", getSoldProductsController); //
-routes.get("/get/owner/info", getOwnerInfoController); //
+routes.get("/get/sold-products", auth, getSoldProductsController); //
+routes.get("/get/owner/info", auth, getOwnerInfoController); //
+routes.get("/get/user", auth, getUpdatedUser);
 
 //update
-routes.post("/update/owner/properties", updateOwnerPropertiesController); //
+routes.post("/update/owner/properties", auth, updateOwnerPropertiesController); //
 routes.post(
   "/update/owner",
   uploadImage.single("image"),
   updateOwnerController
 ); //
-routes.post("update/sold-product", updateSoldProductController); //
+routes.post("update/sold-product", auth, updateSoldProductController); //
 
-routes.post("/upload/image/test", uploadImage.single("img"), (req, res) => {
-  console.log(req.file.path);
-});
+routes.post(
+  "/upload/image/test",
+  auth,
+  uploadImage.single("img"),
+  (req, res) => {
+    console.log(req.file.path);
+  }
+);
 export default routes;

@@ -1,10 +1,9 @@
-import mongoose, { Schema, model } from "mongoose";
+import { Schema, model } from "mongoose";
 import { sharedUser } from "../Shared/shared.user.js";
 import {
   AdminRole,
   BusinessType,
   CreatedByModel,
-  PremiumType,
 } from "../../constants/enums.js";
 
 const ownerSchema = new Schema(
@@ -32,8 +31,14 @@ const ownerSchema = new Schema(
       required: true,
     },
     businessPhoneNumber: {
-      type: String,
-      required: true,
+      value: {
+        type: String,
+        required: true,
+      },
+      verified: {
+        type: Boolean,
+        default: false,
+      },
     },
     businessPartners: [
       {
