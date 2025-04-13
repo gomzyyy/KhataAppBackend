@@ -24,6 +24,7 @@ import {
 import { findByIdController } from "./auth/r/findById.read.js";
 import { validateTokenController } from "./auth/validateToken.js";
 
+
 export {
   loginController,
   signupController,

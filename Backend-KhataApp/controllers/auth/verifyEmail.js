@@ -1,14 +1,16 @@
 import mongoose from "mongoose";
 import { resType } from "../../lib/response.js";
-import { Otp, Owner } from "../../models/index.js";
+import { Employee, Otp, Owner, Partner } from "../../models/index.js";
 import {
   generateOtp,
   sendOTPVerificationEmail,
 } from "../../helpers/auth.helper.js";
+import { AdminRole } from "../../constants/enums.js";
 
 export const verifyEmailController = async (req, res) => {
   try {
-    const { role, uid, otp } = req.query;
+    const { role, uid } = req.query;
+    const { otp } = req.body;
 
     if (!role || !uid || !otp) {
       return res.status(resType.BAD_REQUEST.code).json({
@@ -16,26 +18,44 @@ export const verifyEmailController = async (req, res) => {
         success: false,
       });
     }
-    if (role !== "Owner" || !mongoose.Types.ObjectId.isValid(uid)) {
-      return res.status(resType.BAD_REQUEST.code).json({
+    if (!AdminRole.includes(role) || !mongoose.Types.ObjectId.isValid(uid)) {
+      return res.status(resType.UNAUTHORIZED.code).json({
         message: "You're unauthorised of this action.",
         success: false,
       });
     }
-    const owner = await Owner.findById(uid);
-    if (!owner) {
-      return res.status(resType.NOT_FOUND.code).json({
-        message: "No Owner found with the given Object ID",
+    let user;
+    if (role === "Owner") {
+      user = await Owner.findById(uid);
+    } else if (role === "Partner") {
+      user = await Partner.findById(uid);
+    } else if (role === "Employee") {
+      user = await Employee.findById(uid);
+    } else {
+      return res.status(resType.UNAUTHORIZED.code).json({
+        message: "You're unauthorised of this action.",
         success: false,
       });
     }
-    if (!owner.otp) {
+    if (!user) {
       return res.status(resType.NOT_FOUND.code).json({
-        message: "OTP is missing in Owner's Database",
+        message: "No User found with the given Object ID",
         success: false,
       });
     }
-    const realOtp = await Otp.findById(owner.otp);
+    if (user.email.verified === true) {
+      return res.status(resType.NO_CONTENT.code).json({
+        message: `Email already verified fot this user.`,
+        success: false,
+      });
+    }
+    if (!user.otp) {
+      return res.status(resType.NOT_FOUND.code).json({
+        message: `OTP is missing in ${role}'s Database`,
+        success: false,
+      });
+    }
+    const realOtp = await Otp.findById(user.otp);
     if (!realOtp) {
       return res.status(resType.NOT_FOUND.code).json({
         message: "OTP has expired!",
@@ -48,6 +68,8 @@ export const verifyEmailController = async (req, res) => {
         success: false,
       });
     } else {
+      user.email.verified = true;
+      await user.save();
       return res.status(resType.OK.code).json({
         message: "OTP matched!",
         success: true,
@@ -75,21 +97,41 @@ export const requestOtpController = async (req, res) => {
         success: false,
       });
     }
-    if (role !== "Owner" || !mongoose.Types.ObjectId.isValid(uid)) {
-      return res.status(resType.BAD_REQUEST.code).json({
+    if (!AdminRole.includes(role) || !mongoose.Types.ObjectId.isValid(uid)) {
+      return res.status(resType.UNAUTHORIZED.code).json({
         message: "You're unauthorised of this action.",
         success: false,
       });
     }
-    const owner = await Owner.findById(uid);
-    if (!owner) {
-      return res.status(resType.NOT_FOUND.code).json({
-        message: "No Owner found with the given Object ID",
+    let user;
+    if (role === "Owner") {
+      user = await Owner.findById(uid);
+    } else if (role === "Partner") {
+      user = await Partner.findById(uid);
+    } else if (role === "Employee") {
+      user = await Employee.findById(uid);
+    } else {
+      return res.status(resType.UNAUTHORIZED.code).json({
+        message: "You're unauthorised of this action.",
         success: false,
       });
     }
-    if (updatedEmail) {
-      owner.email = updatedEmail;
+    if (!user) {
+      return res.status(resType.NOT_FOUND.code).json({
+        message: "No User found with the given Object ID",
+        success: false,
+      });
+    }
+  
+    if (updatedEmail && user.email.value !== updatedEmail) {
+      user.email.value = updatedEmail;
+      user.email.verified = false;
+    }
+    if (user.email.verified === true) {
+      return res.status(resType.OK.code).json({
+        message: `Email already verified fot this user.`,
+        success: false,
+      });
     }
     const otp = generateOtp();
     const newOtp = new Otp({
@@ -97,12 +139,12 @@ export const requestOtpController = async (req, res) => {
       expiresAt: new Date(Date.now() + 2 * 60 * 1000),
       generatedAt: new Date(),
     });
-    owner.otp = newOtp._id;
+    user.otp = newOtp._id;
 
     await Promise.all([
-      owner.save(),
+      user.save(),
       newOtp.save(),
-      sendOTPVerificationEmail(owner.email, otp),
+      sendOTPVerificationEmail(user.email.value, otp),
     ]);
 
     return res.status(resType.OK.code).json({

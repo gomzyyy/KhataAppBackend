@@ -32,6 +32,10 @@ const employeeSchema = new Schema(
       enum: [...Department],
       required: true,
     },
+    otp: {
+      type: Schema.Types.ObjectId,
+      ref: "Otp",
+    },
     departmentDescription: { type: String },
     position: { type: String, enum: [...Position], required: true },
     positionDescription: { type: String },

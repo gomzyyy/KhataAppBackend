@@ -17,11 +17,10 @@ const partnerSchema = new Schema(
       type: Number,
       required: true,
     },
-    // partnerId: {
-    //   type: String,
-    //   unique: true,
-    //   required: true,
-    // },
+    otp: {
+      type: Schema.Types.ObjectId,
+      ref: "Otp",
+    },
     role: {
       type: String,
       enum: [...AdminRole],

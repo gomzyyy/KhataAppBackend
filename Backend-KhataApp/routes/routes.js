@@ -18,6 +18,7 @@ import {
   findByIdController,
   validateTokenController,
   getUpdatedUser,
+  verifyEmailController,
 } from "../controllers/index.js";
 import { uploadImage } from "../middlewares/index.js";
 import { auth } from "../middlewares/index.js";
@@ -29,6 +30,7 @@ routes.get("/check-updates", checkForUpdates);
 routes.post("/login", loginController);
 routes.post("/signup", signupController);
 routes.post("/validate/token", auth, validateTokenController);
+routes.post("/validate/otp", auth, verifyEmailController); //
 
 //create
 routes.post("/create/employee", auth, createEmployeeController); //

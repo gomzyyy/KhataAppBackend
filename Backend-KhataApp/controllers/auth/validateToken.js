@@ -5,7 +5,6 @@ import { Employee, Owner, Partner } from "../../models/index.js";
 export const validateTokenController = async (req, res) => {
   try {
     const uid = req.uid;
-    console.log("ejbfpoi0");
     const { role } = req.query;
     if (!role || mongoose.Types.ObjectId.isValid(uid)) {
     }
@@ -14,7 +13,10 @@ export const validateTokenController = async (req, res) => {
       user = await Owner.findById(uid).populate([
         {
           path: "customers",
-          populate: { path: "buyedProducts", populate: { path: ["product",'soldBy','buyer'] } },
+          populate: {
+            path: "buyedProducts",
+            populate: { path: ["product", "soldBy", "buyer"] },
+          },
         },
         "employeeData",
         "inventory",
@@ -23,13 +25,39 @@ export const validateTokenController = async (req, res) => {
       user = await Partner.findById(uid).populate({
         path: "businessOwner",
         select: "-password -accessPasscode",
-        populate: { path: ["customers", "employeeData", "inventory"] },
+        populate: {
+          path: [
+            {
+              path: "customers",
+              populate: {
+                path: "buyedProducts",
+                populate: { path: ["product", "soldBy", "buyer"] },
+              },
+            },
+            ,
+            "employeeData",
+            "inventory",
+          ],
+        },
       });
     } else if (role === "Employee") {
       user = await Employee.findById(uid).populate({
         path: "businessOwner",
         select: "-password -accessPasscode",
-        populate: { path: ["customers", "employeeData", "inventory"] },
+        populate: {
+          path: [
+            {
+              path: "customers",
+              populate: {
+                path: "buyedProducts",
+                populate: { path: ["product", "soldBy", "buyer"] },
+              },
+            },
+            ,
+            "employeeData",
+            "inventory",
+          ],
+        },
       });
     } else {
       return res.status(resType.BAD_REQUEST.code).json({
@@ -43,7 +71,6 @@ export const validateTokenController = async (req, res) => {
         success: false,
       });
     }
-    console.log("ejbsljvfpoi0");
     return res.status(resType.OK.code).json({
       message: "Success.",
       data: {
