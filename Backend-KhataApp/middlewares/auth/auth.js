@@ -65,7 +65,6 @@ export const auth = async (req, res, next) => {
     req.uid = user._id;
     next();
   } catch (error) {
-    console.log(error);
     return res.status(r.INTERNAL_SERVER_ERROR.code).json({
       message:
         error instanceof Error

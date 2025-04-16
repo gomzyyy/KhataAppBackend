@@ -10,13 +10,12 @@ import {
 import { resType } from "../../../lib/response.js";
 import mongoose from "mongoose";
 import { AdminRole } from "../../../constants/enums.js";
+import { populate_obj } from "../../../helpers/obj.js";
 
 export const createSoldProductController = async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
-
   try {
-    console.log("oirreoeobeto'");
     const { buyerId, role, sellerId } = req.query;
     const { productId, count } = req.body;
     if (
@@ -108,39 +107,21 @@ export const createSoldProductController = async (req, res) => {
       let updatedSeller;
       if (role === "Owner") {
         updatedSeller = await Owner.findById(sellerId)
-          .populate([
-            {
-              path: "customers",
-              populate: {
-                path: "buyedProducts",
-                populate: { path: ["product", "soldBy", "buyer"] },
-              },
-            },
-            "employeeData",
-            "inventory",
-          ])
+          .populate(populate_obj[role])
           .session(session);
       } else if (role === "Partner") {
         updatedSeller = await Partner.findOne({
           _id: sellerId,
           "permissions.product.create": true,
         })
-          .populate({
-            path: "businessOwner",
-            select: "-password -accessPasscode",
-            populate: { path: ["customers", "employeeData", "inventory"] },
-          })
+          .populate(populate_obj[role])
           .session(session);
       } else if (role === "Employee") {
         updatedSeller = await Employee.findOne({
           _id: sellerId,
           "permissions.product.create": true,
         })
-          .populate({
-            path: "businessOwner",
-            select: "-password -accessPasscode",
-            populate: { path: ["customers", "employeeData", "inventory"] },
-          })
+          .populate(populate_obj[role])
           .session(session);
       }
       if (!updatedSeller) {
@@ -213,6 +194,12 @@ export const createSoldProductController = async (req, res) => {
         createdAt: new Date(Date.now()),
         createdBy: seller._id,
         createdByModel: role,
+        title: `Product '${product.name}' sold on ${new Date().toDateString()}`,
+        amount: product.discountedPrice
+          ? product.discountedPrice * newSoldProduct.count
+          : product.basePrice * newSoldProduct.count,
+        type: "DEBIT",
+        shortNote: `This transaction documents the sale of '${product.name}', facilitated by ${seller.name} in their role as a ${seller.role}, and purchased by customer ${buyer.name}.`,
       };
       owner.history.payments.push(newPaymentHistory);
       buyer.buyedProducts.push(newSoldProduct._id);
@@ -230,63 +217,21 @@ export const createSoldProductController = async (req, res) => {
       let newUpdatedSeller;
       if (role === "Owner") {
         newUpdatedSeller = await Owner.findById(sellerId)
-          .populate([
-            {
-              path: "customers",
-              populate: {
-                path: "buyedProducts",
-                populate: { path: ["product", "soldBy", "buyer"] },
-              },
-            },
-            "employeeData",
-            "inventory",
-          ])
+          .populate(populate_obj[role])
           .session(session);
       } else if (role === "Partner") {
         newUpdatedSeller = await Partner.findOne({
           _id: sellerId,
           "permissions.product.create": true,
         })
-          .populate({
-            path: "businessOwner",
-            select: "-password -accessPasscode",
-            populate: {
-              path: [
-                {
-                  path: "customers",
-                  populate: {
-                    path: "buyedProducts",
-                    populate: { path: ["product", "soldBy", "buyer"] },
-                  },
-                },
-                "employeeData",
-                "inventory",
-              ],
-            },
-          })
+          .populate(populate_obj[role])
           .session(session);
       } else if (role === "Employee") {
         newUpdatedSeller = await Employee.findOne({
           _id: sellerId,
           "permissions.product.create": true,
         })
-          .populate({
-            path: "businessOwner",
-            select: "-password -accessPasscode",
-            populate: {
-              path: [
-                {
-                  path: "customers",
-                  populate: {
-                    path: "buyedProducts",
-                    populate: { path: ["product", "soldBy", "buyer"] },
-                  },
-                },
-                "employeeData",
-                "inventory",
-              ],
-            },
-          })
+          .populate(populate_obj[role])
           .session(session);
       }
       if (!newUpdatedSeller) {

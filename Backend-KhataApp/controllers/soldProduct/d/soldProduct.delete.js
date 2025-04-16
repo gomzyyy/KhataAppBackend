@@ -14,7 +14,8 @@ export const deleteSoldProductController = async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
-    const { soldProductId, role, uid } = req.query;
+    const { soldProductId, role } = req.query;
+    const uid = req.uid;
     if (!soldProductId || !role || !AdminRole.includes(role) || !uid) {
       await session.abortTransaction();
       return res.status(resType.BAD_REQUEST.code).json({

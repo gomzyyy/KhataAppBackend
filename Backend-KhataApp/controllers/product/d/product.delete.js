@@ -2,6 +2,8 @@ import mongoose from "mongoose";
 import { AdminRole } from "../../../constants/enums.js";
 import { Partner, Product, Owner, Employee } from "../../../models/index.js";
 import resType from "../../../lib/response.js";
+import { populate_obj } from "../../../helpers/obj.js";
+import { deleteFromCloudinary } from "../../../service/cloud.js";
 
 export const deleteProductController = async (req, res) => {
   const session = await mongoose.startSession();
@@ -26,28 +28,42 @@ export const deleteProductController = async (req, res) => {
         success: false,
       });
     }
-    let user;
+    let owner;
     if (role === "Owner") {
-      user = await Owner.findById(uid);
+      owner = await Owner.findById(uid)
+        .populate(populate_obj[role])
+        .session(session);
     } else if (role === "Partner") {
-      user = await Partner.findOne({
+      let partner = await Partner.findOne({
         _id: uid,
         "permissions.product.delete": true,
-      });
+      })
+        .populate(populate_obj[role])
+        .session(session);
+      if (partner) {
+        owner = partner.businessOwner;
+      }
     } else if (role === "Employee") {
-      user = await Employee.findOne({
+      let employee = await Employee.findOne({
         _id: uid,
         "permissions.product.delete": true,
-      });
+      })
+        .populate(populate_obj[role])
+        .session(session);
+      if (employee) {
+        owner = employee.businessOwner;
+      }
     }
-    if (!user) {
+    if (!owner) {
       await session.abortTransaction();
       return res.status(resType.UNAUTHORIZED.code).json({
-        message: "You are unauthorised for selling products.",
+        message: "You are not authorized to delete products.",
         success: false,
       });
     }
-    const product = await Product.deleteOne(productId).session(session);
+    const product = await Product.findById(productId)
+      .populate("businessOwner")
+      .session(session);
 
     if (!product) {
       await session.abortTransaction();
@@ -56,6 +72,24 @@ export const deleteProductController = async (req, res) => {
         success: false,
       });
     }
+    if (product.businessOwner._id.toString() !== owner._id.toString()) {
+      await session.abortTransaction();
+      return res.status(resType.NOT_FOUND.code).json({
+        message: "This product doesn't belong to your inventory.",
+        success: false,
+      });
+    }
+    if (product.image) {
+      const { code, message } = await deleteFromCloudinary(product.image);
+      if (code !== resType.OK.code) {
+        await session.abortTransaction();
+        return res.status(resType.BAD_REQUEST.code).json({
+          message,
+          success: false,
+        });
+      }
+    }
+    await Product.findByIdAndDelete(productId).session(session);
     await session.commitTransaction();
     return res.status(resType.OK.code).json({
       message: "Product deleted.",

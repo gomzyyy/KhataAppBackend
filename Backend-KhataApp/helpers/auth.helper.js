@@ -78,6 +78,26 @@ const sendOTPVerificationEmail = async (sendTo, code) => {
 const generateOtp = () =>
   Math.floor(100000 + Math.random() * 900000).toString();
 
+function generateReferralCode(userId) {
+  const cleanName = userId.trim().replace(/\s+/g, "").toUpperCase();
+
+  const numDigits = Math.floor(Math.random() * 3) + 3; // 3 to 7
+  const randomNumber = Math.floor(Math.random() * Math.pow(10, numDigits))
+    .toString()
+    .padStart(numDigits, "0");
+
+  const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const randomLetter0 = letters.charAt(
+    Math.floor(Math.random() * letters.length)
+  );
+  const randomLetter1 = letters.charAt(
+    Math.floor(Math.random() * letters.length)
+  );
+  const referralCode = `${cleanName}${randomNumber}${randomLetter0}${randomLetter1}`;
+
+  return referralCode;
+}
+
 export {
   generateToken,
   validateToken,
@@ -86,4 +106,5 @@ export {
   getCloudinaryPublicIdFromUrl,
   sendOTPVerificationEmail,
   generateOtp,
+  generateReferralCode
 };

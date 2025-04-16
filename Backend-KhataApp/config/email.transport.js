@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
-dotenv.config({})
+dotenv.config({});
 
 const sender_email = process.env.SENDER_EMAIL;
 const email_app_password = process.env.EMAIL_APP_PASSWORD;
@@ -12,7 +12,7 @@ if (!sender_email || !email_app_password) {
 export const transport = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 587,
-  secure: false, // true for port 465, false for other ports
+  secure: false,
   auth: {
     user: sender_email,
     pass: email_app_password,

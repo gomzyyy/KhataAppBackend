@@ -19,6 +19,9 @@ import {
   validateTokenController,
   getUpdatedUser,
   verifyEmailController,
+  validateReferralCodeController,
+  deleteCustomerController,
+  deleteProductController
 } from "../controllers/index.js";
 import { uploadImage } from "../middlewares/index.js";
 import { auth } from "../middlewares/index.js";
@@ -31,6 +34,7 @@ routes.post("/login", loginController);
 routes.post("/signup", signupController);
 routes.post("/validate/token", auth, validateTokenController);
 routes.post("/validate/otp", auth, verifyEmailController); //
+routes.post("/validate/referralCode", validateReferralCodeController); //
 
 //create
 routes.post("/create/employee", auth, createEmployeeController); //
@@ -52,6 +56,8 @@ routes.post("/request/otp", auth, requestOtpController); //
 
 //delete
 routes.post("/delete/sold-product", auth, deleteSoldProductController); //
+routes.post("/delete/customer", auth, deleteCustomerController); //
+routes.post("/delete/product", auth, deleteProductController); //
 
 //read
 routes.get("/find/user", findByIdController); //

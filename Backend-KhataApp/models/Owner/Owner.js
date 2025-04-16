@@ -4,6 +4,7 @@ import {
   AdminRole,
   BusinessType,
   CreatedByModel,
+  UnkownPaymentType,
 } from "../../constants/enums.js";
 
 const ownerSchema = new Schema(
@@ -24,6 +25,15 @@ const ownerSchema = new Schema(
     equity: {
       type: Number,
       required: true,
+    },
+    credits: {
+      type: Number,
+      default: 0,
+    },
+    referralCode: {
+      type: String,
+      required: true,
+      unique: true,
     },
     businessName: {
       type: String,
@@ -59,6 +69,23 @@ const ownerSchema = new Schema(
           payment: {
             type: Schema.Types.ObjectId,
             refPath: "paymentType",
+          },
+          title: {
+            type: String,
+            required: true,
+          },
+          shortNote: {
+            type: String,
+            required: true,
+          },
+          amount: {
+            type: Number,
+            required: true,
+          },
+          type: {
+            type: String,
+            enum: [...UnkownPaymentType],
+            required: true,
           },
           paymentType: {
             type: String,
@@ -155,4 +182,5 @@ const ownerSchema = new Schema(
   { timestamps: true }
 );
 const Owner = model("Owner", ownerSchema);
+
 export default Owner;

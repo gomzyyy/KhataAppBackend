@@ -1,64 +1,33 @@
 import mongoose from "mongoose";
 import { resType } from "../../lib/response.js";
 import { Employee, Owner, Partner } from "../../models/index.js";
+import { populate_obj } from "../../helpers/obj.js";
 
 export const validateTokenController = async (req, res) => {
   try {
     const uid = req.uid;
     const { role } = req.query;
-    if (!role || mongoose.Types.ObjectId.isValid(uid)) {
+    if (!role || !mongoose.Types.ObjectId.isValid(uid)) {
+      return res.status(resType.UNAUTHORIZED.code).json({
+        message: "Invalid user Object ID.",
+        success: false,
+      });
     }
     let user;
     if (role === "Owner") {
-      user = await Owner.findById(uid).populate([
-        {
-          path: "customers",
-          populate: {
-            path: "buyedProducts",
-            populate: { path: ["product", "soldBy", "buyer"] },
-          },
-        },
-        "employeeData",
-        "inventory",
-      ]);
+      user = await Owner.findById(uid)
+        .populate(populate_obj[role])
+        .populate({
+          path: "history.payments",
+          populate: [
+            { path: "payment" }, // will use refPath: 'paymentType'
+            { path: "createdBy" }, // will use refPath: 'createdByModel'
+          ],
+        });
     } else if (role === "Partner") {
-      user = await Partner.findById(uid).populate({
-        path: "businessOwner",
-        select: "-password -accessPasscode",
-        populate: {
-          path: [
-            {
-              path: "customers",
-              populate: {
-                path: "buyedProducts",
-                populate: { path: ["product", "soldBy", "buyer"] },
-              },
-            },
-            ,
-            "employeeData",
-            "inventory",
-          ],
-        },
-      });
+      user = await Partner.findById(uid).populate(populate_obj[role]);
     } else if (role === "Employee") {
-      user = await Employee.findById(uid).populate({
-        path: "businessOwner",
-        select: "-password -accessPasscode",
-        populate: {
-          path: [
-            {
-              path: "customers",
-              populate: {
-                path: "buyedProducts",
-                populate: { path: ["product", "soldBy", "buyer"] },
-              },
-            },
-            ,
-            "employeeData",
-            "inventory",
-          ],
-        },
-      });
+      user = await Employee.findById(uid).populate(populate_obj[role]);
     } else {
       return res.status(resType.BAD_REQUEST.code).json({
         message: resType.BAD_REQUEST.message,
@@ -71,6 +40,7 @@ export const validateTokenController = async (req, res) => {
         success: false,
       });
     }
+    console.log(user);
     return res.status(resType.OK.code).json({
       message: "Success.",
       data: {
@@ -79,7 +49,6 @@ export const validateTokenController = async (req, res) => {
       success: true,
     });
   } catch (error) {
-    console.log(error);
     return res.status(resType.INTERNAL_SERVER_ERROR.code).json({
       message: `error occured!: ${
         error instanceof Error

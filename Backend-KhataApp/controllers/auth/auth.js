@@ -2,12 +2,14 @@ import { resType } from "../../lib/response.js";
 import { Owner, Partner, Employee, AccountType } from "../../models/index.js";
 import {
   encryptPassword,
+  generateReferralCode,
   generateToken,
   verifyPassword,
 } from "../../helpers/auth.helper.js";
 import { AdminRole, BusinessType } from "../../constants/enums.js";
 import { uploadToCloudinary } from "../../service/cloud.js";
 import mongoose from "mongoose";
+import { populate_obj } from "../../helpers/obj.js";
 
 export const loginController = async (req, res) => {
   try {
@@ -23,23 +25,11 @@ export const loginController = async (req, res) => {
     let user;
 
     if (role === "Owner") {
-      user = await Owner.findOne({ userId }).populate([
-        "customers",
-        "employeeData",
-        "inventory",
-      ]);
+      user = await Owner.findOne({ userId }).populate(populate_obj[role]);
     } else if (role === "Partner") {
-      user = await Partner.findOne({ userId }).populate({
-        path: "businessOwner",
-        select: "-password -accessPasscode",
-        populate: { path: ["customers", "employeeData", "inventory"] },
-      });
+      user = await Partner.findOne({ userId }).populate(populate_obj[role]);
     } else if (role === "Employee") {
-      user = await Employee.findOne({ userId }).populate({
-        path: "businessOwner",
-        select: "-password -accessPasscode",
-        populate: { path: ["customers", "employeeData", "inventory"] },
-      });
+      user = await Employee.findOne({ userId }).populate(populate_obj[role]);
     } else {
       return res.status(resType.BAD_REQUEST.code).json({
         message: resType.BAD_REQUEST.message,
@@ -88,7 +78,6 @@ export const loginController = async (req, res) => {
       success: true,
     });
   } catch (error) {
-    console.log(error);
     return res.status(resType.INTERNAL_SERVER_ERROR.code).json({
       message: `Internal server error.`,
       success: false,
@@ -112,8 +101,8 @@ export const signupController = async (req, res) => {
       businessType, //
       role,
       gstNumber,
+      uniqueReferralCode,
     } = req.body;
-    console.log(req.body);
     if (
       !name || //
       !email || //
@@ -181,10 +170,25 @@ export const signupController = async (req, res) => {
     const encryptedPassword = await encryptPassword(password);
     if (!encryptedPassword) {
       return res.status(resType.BAD_REQUEST.code).json({
-        message: "Error occured while encrypting user credientials",
+        message: "Error occurred while encrypting user credentials",
         success: false,
       });
     }
+
+    let refCode;
+    let isUnique = false;
+    while (!isUnique) {
+      refCode = generateReferralCode(userId);
+      const existing = await Owner.findOne({ referralCode: refCode });
+      if (!existing) isUnique = true;
+    }
+    if (!refCode) {
+      return res.status(resType.INTERNAL_SERVER_ERROR.code).json({
+        message: "Referral code generation failed.",
+        success: false,
+      });
+    }
+
     const newOwnerData = {
       name,
       phoneNumber: {
@@ -209,6 +213,7 @@ export const signupController = async (req, res) => {
       equity: 100,
       gstNumber,
       image,
+      referralCode: refCode,
     };
     const newBusinessOwner = new Owner(newOwnerData);
     const newAccountType = new AccountType({
@@ -235,6 +240,22 @@ export const signupController = async (req, res) => {
         },
         success: true,
       });
+    }
+    if (uniqueReferralCode) {
+      const referBy = await Owner.findOne({ referralCode: uniqueReferralCode });
+      if (!referBy) {
+        return res.status(resType.BAD_REQUEST.code).json({
+          message: "Incorrect Referral code.",
+          data: {
+            user: undefined,
+            token: undefined,
+          },
+          success: false,
+        });
+      }
+      referBy.credits += 7;
+      newBusinessOwner.credits += 7;
+      await referBy.save();
     }
     await Promise.all([newBusinessOwner.save(), newAccountType.save()]);
 
@@ -280,29 +301,11 @@ export const getUpdatedUser = async (req, res) => {
     let user;
 
     if (role === "Owner") {
-      user = await Owner.findById(uid).populate([
-        {
-          path: "customers",
-          populate: {
-            path: "buyedProducts",
-            populate: { path: ["product", "soldBy", "buyer"] },
-          },
-        },
-        "employeeData",
-        "inventory",
-      ]);
+      user = await Owner.findById(uid).populate(populate_obj[role]);
     } else if (role === "Partner") {
-      user = await Partner.findById(uid).populate({
-        path: "businessOwner",
-        select: "-password -accessPasscode",
-        populate: { path: ["customers", "employeeData", "inventory"] },
-      });
+      user = await Partner.findById(uid).populate(populate_obj[role]);
     } else if (role === "Employee") {
-      user = await Employee.findById(uid).populate({
-        path: "businessOwner",
-        select: "-password -accessPasscode",
-        populate: { path: ["customers", "employeeData", "inventory"] },
-      });
+      user = await Employee.findById(uid).populate(populate_obj[role]);
     } else {
       return res.status(resType.BAD_REQUEST.code).json({
         message: resType.BAD_REQUEST.message,
@@ -323,7 +326,6 @@ export const getUpdatedUser = async (req, res) => {
       success: true,
     });
   } catch (error) {
-    console.log(error);
     return res.status(resType.INTERNAL_SERVER_ERROR.code).json({
       message: `Internal server error.`,
       success: false,

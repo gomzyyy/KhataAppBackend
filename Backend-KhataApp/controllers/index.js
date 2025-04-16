@@ -23,6 +23,9 @@ import {
 } from "./auth/verifyEmail.js";
 import { findByIdController } from "./auth/r/findById.read.js";
 import { validateTokenController } from "./auth/validateToken.js";
+import { validateReferralCodeController } from "./auth/validateReferalCode.js";
+import { deleteCustomerController } from "./customer/d/customer.delete.js";
+import { deleteProductController } from "./product/d/product.delete.js";
 
 
 export {
@@ -47,4 +50,7 @@ export {
   findByIdController,
   validateTokenController,
   getUpdatedUser,
+  validateReferralCodeController,
+  deleteCustomerController,
+  deleteProductController
 };

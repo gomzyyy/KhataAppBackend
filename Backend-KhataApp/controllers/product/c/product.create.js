@@ -22,10 +22,6 @@ export const createProductController = async (req, res) => {
       productCost,
       productType,
     } = req.body;
-    console.log("REQ.BODY =>", req.body);
-    console.log("REQ.FILE =>", req.file);
-    console.log("REQ.QUERY =>", req.query);
-
     if (
       !name ||
       !basePrice ||
@@ -41,17 +37,6 @@ export const createProductController = async (req, res) => {
       !productType ||
       !ProductType.includes(productType)
     ) {
-      console.log(
-        name,
-        basePrice,
-        quantity,
-        measurementType,
-        stock,
-        creatorId,
-        ownerId,
-        role,
-        productType
-      );
       return res.status(resType.BAD_REQUEST.code).json({
         message: "Some required fields are missing.",
         success: false,
