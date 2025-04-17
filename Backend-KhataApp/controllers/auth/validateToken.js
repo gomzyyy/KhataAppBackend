@@ -40,7 +40,6 @@ export const validateTokenController = async (req, res) => {
         success: false,
       });
     }
-    console.log(user);
     return res.status(resType.OK.code).json({
       message: "Success.",
       data: {

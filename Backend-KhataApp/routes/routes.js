@@ -21,7 +21,8 @@ import {
   verifyEmailController,
   validateReferralCodeController,
   deleteCustomerController,
-  deleteProductController
+  deleteProductController,
+  getSingleHistoryController
 } from "../controllers/index.js";
 import { uploadImage } from "../middlewares/index.js";
 import { auth } from "../middlewares/index.js";
@@ -64,6 +65,7 @@ routes.get("/find/user", findByIdController); //
 routes.get("/get/sold-products", auth, getSoldProductsController); //
 routes.get("/get/owner/info", auth, getOwnerInfoController); //
 routes.get("/get/user", auth, getUpdatedUser);
+routes.get("/get/history/single", auth, getSingleHistoryController);
 
 //update
 routes.post("/update/owner/properties", auth, updateOwnerPropertiesController); //

@@ -4,6 +4,7 @@ import {
   AdminRole,
   BusinessType,
   CreatedByModel,
+  PaymentHistoryType,
   UnkownPaymentType,
 } from "../../constants/enums.js";
 
@@ -70,6 +71,10 @@ const ownerSchema = new Schema(
             type: Schema.Types.ObjectId,
             refPath: "paymentType",
           },
+          paymentType: {
+            type: String,
+            enum: [...PaymentHistoryType],
+          },
           title: {
             type: String,
             required: true,
@@ -87,14 +92,11 @@ const ownerSchema = new Schema(
             enum: [...UnkownPaymentType],
             required: true,
           },
-          paymentType: {
-            type: String,
-            enum: ["SoldProductPaymentHistory", "UnknownPaymentHistory"],
-          },
+
           createdAt: Date,
           createdBy: {
             type: Schema.Types.ObjectId,
-            refPath: "paymentType",
+            refPath: "createdByModel",
           },
           createdByModel: {
             type: String,

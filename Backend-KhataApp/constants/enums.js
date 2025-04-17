@@ -15,6 +15,7 @@ export const PremiumType = ["Regular", "Silver", "Gold"];
 export const AccountTypeEnum = ["Regular", "Premium", "OnTrial"];
 export const AdminRole = ["Owner", "Employee", "Partner"];
 export const PaymentState = ["PAID", "UNPAID", "PENDING"];
+export const PaymentHistoryType = ["SoldProductPaymentHistory", "UnknownPaymentHistory"]
 export const UnkownPaymentType = ["CREDIT", "DEBIT"];
 export const ProductType = ["Physical", "Digital", "Subscription", "Service"]
 export const RequestForSoldProduct = [

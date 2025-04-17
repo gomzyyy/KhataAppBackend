@@ -26,7 +26,7 @@ import { validateTokenController } from "./auth/validateToken.js";
 import { validateReferralCodeController } from "./auth/validateReferalCode.js";
 import { deleteCustomerController } from "./customer/d/customer.delete.js";
 import { deleteProductController } from "./product/d/product.delete.js";
-
+import { getSingleHistoryController } from "./history/r/history.read.js";
 
 export {
   loginController,
@@ -52,5 +52,6 @@ export {
   getUpdatedUser,
   validateReferralCodeController,
   deleteCustomerController,
-  deleteProductController
+  deleteProductController,
+  getSingleHistoryController
 };

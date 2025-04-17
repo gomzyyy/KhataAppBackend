@@ -88,19 +88,40 @@ export const createSoldProductController = async (req, res) => {
       createdAt: { $gte: startOfDay, $lt: endOfDay },
     }).populate(["soldBy", "product"]);
     if (alreadySold) {
-      const existingHistory = await SoldProductPaymentHistory.findOne({
+      const alreadySoldProductHistory = new SoldProductPaymentHistory({
+        referenceType: "SoldProduct",
         reference: alreadySold._id,
+        info: {
+          name: product.name,
+          amount:
+            (product.discountedPrice
+              ? product.discountedPrice
+              : product.basePrice) * count,
+        },
+        paymentDescription: `Product ${product.name}, was sold by ${
+          alreadySold.soldBy.name
+        } as ${
+          alreadySold.soldBy.role
+        } of our business, on ${new Date().toDateString()}`,
       });
-      alreadySold.count += count;
-      product.stock -= count;
-      product.totalSold += count;
-      if (existingHistory) {
-        existingHistory.info.amount = alreadySold.discountedPrice
-          ? product.discountedPrice * alreadySold.count
-          : product.basePrice * alreadySold.count;
-        await existingHistory.save();
-      }
+      const alreadyPaymentHistory = {
+        payment: alreadySoldProductHistory._id,
+        paymentType: "SoldProductPaymentHistory",
+        createdAt: new Date(Date.now()),
+        createdBy: alreadySold.soldBy._id,
+        createdByModel: role,
+        title: `Payment for ${alreadySold.product.name}`,
+        amount: product.discountedPrice
+          ? product.discountedPrice * count
+          : product.basePrice * count,
+        type: "CREDIT",
+        shortNote: `This transaction reflects the sale of '${product.name}', sold by ${alreadySold.soldBy.name} as ${alreadySold.soldBy.role}, and purchased by customer ${alreadySold.buyer.name}.`,
+      };
+      owner.history.payments.push(alreadyPaymentHistory);
+
       await Promise.all([
+        alreadySoldProductHistory.save(),
+        owner.save(),
         product.save({ session }),
         alreadySold.save({ session }),
       ]);
@@ -180,9 +201,10 @@ export const createSoldProductController = async (req, res) => {
         reference: newSoldProduct._id,
         info: {
           name: product.name,
-          amount: product.discountedPrice
-            ? product.discountedPrice * newSoldProduct.count
-            : product.basePrice * newSoldProduct.count,
+          amount:
+            (product.discountedPrice
+              ? product.discountedPrice
+              : product.basePrice) * count,
         },
         paymentDescription: `Product ${product.name}, was sold by ${
           seller.name
@@ -194,12 +216,12 @@ export const createSoldProductController = async (req, res) => {
         createdAt: new Date(Date.now()),
         createdBy: seller._id,
         createdByModel: role,
-        title: `Product '${product.name}' sold on ${new Date().toDateString()}`,
+        title: `Payment for ${product.name}`,
         amount: product.discountedPrice
           ? product.discountedPrice * newSoldProduct.count
           : product.basePrice * newSoldProduct.count,
-        type: "DEBIT",
-        shortNote: `This transaction documents the sale of '${product.name}', facilitated by ${seller.name} in their role as a ${seller.role}, and purchased by customer ${buyer.name}.`,
+        type: "CREDIT",
+        shortNote: `This transaction reflects the sale of '${product.name}', sold by ${seller.name} as ${seller.role}, and purchased by customer ${buyer.name}.`,
       };
       owner.history.payments.push(newPaymentHistory);
       buyer.buyedProducts.push(newSoldProduct._id);
@@ -251,7 +273,7 @@ export const createSoldProductController = async (req, res) => {
     }
   } catch (error) {
     await session.abortTransaction();
-
+    console.log(error);
     return res.status(resType.INTERNAL_SERVER_ERROR.code).json({
       message: `Error occurred!: ${
         error instanceof Error
