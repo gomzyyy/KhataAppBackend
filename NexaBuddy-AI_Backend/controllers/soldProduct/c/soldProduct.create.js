@@ -88,6 +88,9 @@ export const createSoldProductController = async (req, res) => {
       createdAt: { $gte: startOfDay, $lt: endOfDay },
     }).populate(["soldBy", "product"]);
     if (alreadySold) {
+      alreadySold.count += count;
+      product.stock -= count;
+      product.totalSold += count;
       const alreadySoldProductHistory = new SoldProductPaymentHistory({
         referenceType: "SoldProduct",
         reference: alreadySold._id,
@@ -118,7 +121,6 @@ export const createSoldProductController = async (req, res) => {
         shortNote: `This transaction reflects the sale of '${product.name}', sold by ${alreadySold.soldBy.name} as ${alreadySold.soldBy.role}, and purchased by customer ${alreadySold.buyer.name}.`,
       };
       owner.history.payments.push(alreadyPaymentHistory);
-
       await Promise.all([
         alreadySoldProductHistory.save(),
         owner.save(),
